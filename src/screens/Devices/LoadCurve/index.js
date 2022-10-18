@@ -204,6 +204,7 @@ export default function LoadCurveScreen(p){
         console.log(e," is cliqueeee")
     }}/>
     return <Screen 
+        {...props}
         appBarProps = {{actions :[
             {
                 icon : 'refresh',
