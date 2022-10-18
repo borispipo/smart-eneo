@@ -1,8 +1,7 @@
-import App from "./expo-ui";
 import config from "./src/config";
 import { checkSavedMeters } from "$screens/Devices/utils";
 
-App({config,App:({children,APP})=>{
+require(process.env.IS_LOCAL_DEV?"./expo-ui":"@fto-consult/expo-ui").default({config,App:({children,APP})=>{
     const SocketProvider = require("$socket/Provider").default;
     const onLoginUser = ()=>{
         checkSavedMeters();
