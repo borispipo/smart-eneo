@@ -1,0 +1,18 @@
+{
+  "name": "smart-device-eneo",
+  "version": "1.0.0",
+  "main": "index",
+  "scripts": {
+    "start": "npx expo start",
+    "android": "npx expo start --android",
+    "ios": "npx expo start --ios",
+    "web": "npx expo start --web",
+    "build-web": "npx expo export:web",
+    "build-cloudflare": "npm install && npx expo export:web"
+  },
+  "private": true,
+  "dependencies": {
+    "@fto-consult/expo-ui": "^1.1.4",
+    "socket.io-client": "^4.5.3"
+  }
+}

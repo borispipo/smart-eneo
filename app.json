@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "device-smart-eneo",
+    "slug": "device-smart-eneo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "userInterfaceStyle": "automatic",
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "entitlements": {
+        "com.apple.developer.networking.wifi-info": "true"
+      }
+    },
+    "android": {
+      "package": "com.ftc.apps.device.smarteneo",
+      "blockedPermissions": [],
+      "softwareKeyboardLayoutMode": "pan",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "da849585-40de-4cfe-9705-94dd4ce7e671"
+      }
+    }
+  },
+  "userInterfaceStyle": "automatic"
+}
