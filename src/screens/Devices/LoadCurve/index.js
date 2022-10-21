@@ -140,18 +140,13 @@ export default function LoadCurveScreen(p){
         }
         content = <Chart
             height = {400}
-            options = {
-                {
-                    chart: {
-                        width: "100%",
-                        type: "line"
-                    },
-                    series,
-                    xaxis : {
-                        categories : xaxis,
-                    },
+            type = "line"
+            series = {series}
+            options = {{
+                xaxis : {
+                    categories : xaxis,
                 }
-            }
+            }}
         />
     }
     React.useEffect(()=>{
