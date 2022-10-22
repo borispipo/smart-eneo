@@ -8,6 +8,7 @@ import LOGICAL_NAMES from "./logicalNames";
 import { io} from "./client";
 import APP from "$app/instance";
 import {timeout} from "$capi";
+import {canCheckOnline} from "$api";
 
 import Auth from "$cauth";
 
@@ -27,8 +28,8 @@ export const USER_ALREADY_CONNECTED = "this user is already connected";
 
 export const BACKEND_MODE = "BA";
 
-export const LOAD_CURVE_DEFAULT_START_PERIOD = DateLib.parse("10/01/2017 00:00:00",DateLib.defaultDateTimeFormat);
-export const LOAD_CURVE_DEFAULT_END_PERIOD = DateLib.parse("16/01/2017 00:00:00",DateLib.defaultDateTimeFormat);
+export const DEFAULT_START_PERIOD = DateLib.parse("10/01/2017 00:00:00",DateLib.defaultDateTimeFormat);
+export const DEFAULT_END_PERIOD = DateLib.parse("16/01/2017 00:00:00",DateLib.defaultDateTimeFormat);
 export const buildURL = (url,queryParams)=>{
     const token = getToken();
     queryParams= Object.assign({},queryParams);
@@ -123,7 +124,7 @@ export const getSendMessageOptions = (opts) =>{
     return options;
 }
 /**** envoie un message via le webSocket 
- *  si la props multiple est  à true alors il s'agit d'un message destinée pour plusierus logicalNames, et la 
+ * si la props multiple est  à true alors il s'agit d'un message destinée pour plusierus logicalNames, et la 
  * valeur logicalName dans ce cas est l'ensemble des logicialNames séparés par la virgule
  * @return {Promise}
 */
@@ -162,13 +163,31 @@ export const sendMessage = (socket,opts,prepareOptions)=>{
         });
         return timeout(p,options.delay || options.timeout);
     };
-    if((options.checkOnline !== false || process.env.CAN_RUN_API_OFFLINE !== true) && !APP.isOnline()){
+    if((options.checkOnline !== false || canCheckOnline) && !APP.isOnline()){
         return APP.checkOnline().then(cb);
     }
     return cb();
 }
 
-export const LOAD_CURVE_DATE_TIME_FORMAT = "dd/mm/yyyy HH:MM:ss";
+export const mutatePeriodOptions = (options)=>{
+    let dateStart = defaultVal(options.payload.dateStart,options.dateStart,DEFAULT_START_PERIOD);
+    let dateEnd = defaultVal(options.payload.dateEnd,options.dateEnd,DEFAULT_END_PERIOD);
+    if(DateLib.isDateObj(dateStart)){
+        dateStart = dateStart.toFormat(REQUEST_DATE_TIME_FORMAT);
+    }
+    if(DateLib.isDateObj(dateEnd)){
+        dateEnd = dateEnd.toFormat(REQUEST_DATE_TIME_FORMAT);
+    }
+    options.payload.dateStart = dateStart;
+    options.payload.dateEnd = dateEnd;
+    delete options.payload.logicalNames;
+    delete options.logicalNames;
+    delete options.dateStart;
+    delete options.dateEnd;
+    return options;
+}
+
+export const REQUEST_DATE_TIME_FORMAT = "dd/mm/yyyy HH:MM:ss";
 /*** envoie un message de récupération de la courbe des charges 
  * les options doivent avoir la date de début, dateStart et la date de fin dateEnd
 */
@@ -179,25 +198,33 @@ export const sendLoadCurveMessage = (socket,opts)=>{
             msg : "could not send load curve message, invalid options",
         })
     }
+    mutatePeriodOptions(options);
     options.payload.logicalName = LOGICAL_NAMES.LOAD_CURVE_LOGICAL_NAME.code;
     options.type = TYPES.LOAD_CURVE_TYPE;
-    let dateStart = defaultVal(options.payload.dateStart,options.dateStart,LOAD_CURVE_DEFAULT_START_PERIOD);
-    let dateEnd = defaultVal(options.payload.dateEnd,options.dateEnd,LOAD_CURVE_DEFAULT_END_PERIOD);
-    if(DateLib.isDateObj(dateStart)){
-        dateStart = dateStart.toFormat(LOAD_CURVE_DATE_TIME_FORMAT);
-    }
-    if(DateLib.isDateObj(dateEnd)){
-        dateEnd = dateEnd.toFormat(LOAD_CURVE_DATE_TIME_FORMAT);
-    }
-    options.payload.dateStart = dateStart;
-    options.payload.dateEnd = dateEnd;
-    delete options.logicalNames;
-    delete options.payload.logicalNames;
-    delete options.dateStart;
-    delete options.dateEnd;
     return sendMessage(socket,options,false);
 }
 
+export const sendBilanMessage = (socket,opts)=>{
+    const options = getSendMessageOptions(opts);
+    if(!options) {
+        return Promise.reject({
+            msg : "could not send bilan message, invalid options",
+        })
+    }
+    mutatePeriodOptions(options);
+    ["deviceName","guruxAppId"].map((v)=>{
+        delete options[v];
+    })
+    delete options.payload.logicalName;
+    delete options.logicalName;
+    options.type = TYPES.GET_BILAN;
+    options.payload.logicalName = "0.0.99.1.0.255";
+    delete options.payload.deviceName;
+    delete options.payload.guruxAppId;
+    return sendMessage(socket,options,false);
+}
+
+/***envoie d'une requête ping au niveau du serveur de socket */
 export const sendPingMessage = (socket,opts)=>{
     const options = getSendMessageOptions(opts);
     if(!options){

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import Label from "$components/Label";
-import View from "$components/View";
+import Label from "$ecomponents/Label";
+import View from "$ecomponents/View";
 import theme from "$theme";
-import Icon from "$components/Icon";
-import Avatar from "$components/Avatar";
+import Avatar from "$ecomponents/Avatar";
 export default {
     Text : function({styles,style,testID,...rest}){
         return <View testID={testID} style={style}>

@@ -28,3 +28,6 @@ export const GET_GENERIC_PROFILE_RESPONSE  = 'GET_GENERIC_PROFILE_RESPONSE';
 export const GET_ALL_DATA_REGISTER = 'GET_ALL_DATA_REGISTER';
 
 export const GET_PING = "GET_PING";
+
+///requête pour obtenir le bilan
+export const GET_BILAN = "GET_BILAN";

@@ -11,6 +11,7 @@ module.exports = function(api) {
       $getLoginProps : path.resolve(src,"auth","getLoginProps"),
       $logoComponent : path.resolve(src,"logo"),
       $assets : path.resolve(dir,"assets"),
+      $layouts : path.resolve(src,"layouts"),
     }
     return require(`${require("@fto-consult/expo-ui/expo-ui-path")("babel.config")}`)(api,{base :dir,alias});
   };

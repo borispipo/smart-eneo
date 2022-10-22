@@ -2,21 +2,20 @@ import Label from "$ecomponents/Label";
 import React from "$react";
 import APP from "$app";
 import Screen from "$elayouts/Screen";
-import {SelectCountry} from "$ecomponents/Countries";
 import View from "$ecomponents/View";
-import theme from "$theme";
-import { TextInput } from "react-native";
-import Table from "$ecomponents/Table";
+import EnergySumary from "$layouts/EnergySumary";
+
 
 export const screenName = "HOME";
 
 
 export default function Home (props){
-    React.useEffect(()=>{
-    },[])
+    const [state,setState] = React.useState({});
+    
     return <Screen {...props} 
         testID = {"RN_MainScreenHome"}
     >
+        <EnergySumary/>
     </Screen>
 }
 

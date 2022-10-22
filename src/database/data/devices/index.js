@@ -3,6 +3,7 @@ import gaDBName from "./gaDBName";
 import gaTable from "./gaTable";
 import {isObj,isNonNullString,uniqid} from "$utils";
 import meterTable from "./meterTable";
+import theme from "$theme";
 
 export {gaTable,gaTable as gaTableName};
 export {meterTable, meterTable as meterTableName};
@@ -18,25 +19,43 @@ export const getMeterDBNameFromType = (str)=>{
     }
     return METER_DB_NAME_PREFIX+(str.toLowerCase().ltrim(METER_DB_NAME_PREFIX));
 }
-
+const isM = (meter,type)=>{
+    meter = isObj(meter)? meter.name : meter;
+    return meter && typeof meter =='string' && meter.toLowerCase() == type.toLowerCase()? true : false;
+}
 export const METER_TYPES = {
     A : {
         key : "A",
         code : "incoming",
         label : "Entrant",
         icon : "arrow-down",
+        get color (){
+            return theme.colors.success;
+        },
+        /*** si le compteur passé en paramètre est de type entrant */
+        is : meter => isM(meter,"A")
     },
     D : {
         key : "D",
         code : "outgoing",
         label : "Sortant",
         icon : "arrow-up",
+        get color() {
+            return theme.colors.error;
+        },
+        /*** si le compteur passé en paramètre est de type sortant */
+        is : meter => isM(meter,"D")
     },
     T : {
         key : "T",
         code : "auxiliary",
         label : "Auxiliaires",
         icon : "format-align-middle",
+        get color(){
+            return theme.colors.warning;
+        },
+        /*** si le compteur passé en paramètre est de type auxiliaire */
+        is : meter => isM(meter,"T")
     }
 }
 const _isMType = (type,mType)=>{
@@ -53,12 +72,15 @@ const _isMType = (type,mType)=>{
     }
     return type == mType? true : false;
 }
-export const isMeterTypeAxiliary = (type)=>{
+/*** si c'est un compteur auxilière */
+export const isMeterTypeAuxiliary = (type)=>{
     return _isMType(type,METER_TYPES.T.code)
 }
+/*** si c'est un compteur Incomming */
 export const isMeterTypeIcomming = (type)=>{
     return _isMType(type,METER_TYPES.A.code)
 }
+/**** si c'est un compteur sortant */
 export const isMeterTypeOutgoing = (type)=>{
     return _isMType(type,METER_TYPES.D.code)
 }

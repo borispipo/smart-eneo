@@ -4,7 +4,6 @@ import DateLib from "$lib/date";
 import Preloader from "$preloader";
 import notify from "$notify";
 import DatePicker from "$ecomponents/Date";
-import { LOAD_CURVE_DEFAULT_START_PERIOD,LOAD_CURVE_DEFAULT_END_PERIOD } from "$socket/utils";
 import Provider from "$ecomponents/Dialog/Provider";
 import Auth from "$cauth";
 import Icon from "$ecomponents/Icon";
@@ -18,11 +17,12 @@ import {getScreenProps} from "$cnavigation";
 import theme from "$theme";
 import Chart from "$chart";
 import React from "$react";
+import { DEFAULT_START_PERIOD,DEFAULT_END_PERIOD } from "$socket/utils";
 
 const CHART_DATE_SESSION_FORMAT = "CHART_DATE_SESSION";
 
-const defaultStartPeriod = LOAD_CURVE_DEFAULT_START_PERIOD;
-const defaultEndPeriod = LOAD_CURVE_DEFAULT_END_PERIOD;
+const defaultStartPeriod = DEFAULT_START_PERIOD;
+const defaultEndPeriod = DEFAULT_END_PERIOD;
 /**** les entêtes des courbes de charges */
 const LOAD_CURVE_HEADERS = ['Period', 'Canal 1 (kWh)', 'Canal 2 (kWh)', 'Canal 3 (kvarh)', 'Canal 4 (kvarh)', 'Evenements'];
 //const LOAD_CURVE_PERIOD_INDEX = 0;

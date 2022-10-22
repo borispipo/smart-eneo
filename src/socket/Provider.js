@@ -1,12 +1,13 @@
 import React from "$react";
 import APP from "$app/instance";
 import {isNonNullString,isPromise,isObj,uniqid,defaultStr,defaultNumber,isValidUrl} from "$utils";
-import { connect as nCreateSocket,sendPingMessage as sPingMessage,sendMessage as sMessage,sendLoadCurveMessage as sLoadCurveMessage,getLogicalName,LOAD_CURVE_DATE_TIME_FORMAT,getLogicalNames} from "./utils";
+import { connect as nCreateSocket,sendPingMessage as sPingMessage,sendMessage as sMessage,sendLoadCurveMessage as sLoadCurveMessage,sendBilanMessage as sBilanMessage,getLogicalName,REQUEST_DATE_TIME_FORMAT,getLogicalNames} from "./utils";
 import TYPES from "./types";
 import LOGICAL_NAMES  from "./logicalNames";
 import Queue from "$utils/queue";
 import PropTypes from "prop-types";
 import Auth from "$cauth";
+import {timeout} from "$capi/utils";
 
 const queue = new Queue();
 
@@ -122,7 +123,7 @@ export default function SocketProvider(props){
     const sendMessage = (options,method)=>{
         method = typeof method =="function"? method : sMessage;
         if(hasSocket() && !canSendMessage()){
-			return new Promise((resolve,reject)=>{
+			return timeout(new Promise((resolve,reject)=>{
                 callbackRef.current = x =>{
                     const t = method(socketRef.current,options);
                     if(isPromise(t)){
@@ -130,12 +131,15 @@ export default function SocketProvider(props){
                     }
                     callbackRef.current = null;
                 }
-            })
+            }));
 		}
-        return method(socketRef.current,options);
+        return timeout(method(socketRef.current,options));
     };
     const sendLoadCurveMessage = (options)=>{
         return sendMessage(options,sLoadCurveMessage);
+    }
+    const sendBilanMessage = (options)=>{
+        return sendMessage(options,sBilanMessage);
     }
     const sendPingMessage = (options)=>{
         return sendMessage(options,sPingMessage);
@@ -159,7 +163,7 @@ export default function SocketProvider(props){
             APP.off(APP.EVENTS.AUTH_LOGIN_USER,onLoginUser);
         }
     },[])
-    const value = {connect,...context,LOAD_CURVE_DATE_TIME_FORMAT,getLogicalName,getLogicalNames,sendPingMessage,sendMessage,sendLoadCurveMessage,canSendMessage,context,bind,unbind,TYPES,LOGICAL_NAMES,getSocket,get:getSocket};
+    const value = {connect,...context,REQUEST_DATE_TIME_FORMAT,getLogicalName,getLogicalNames,sendPingMessage,sendMessage,sendLoadCurveMessage,sendBilanMessage,canSendMessage,context,bind,unbind,TYPES,LOGICAL_NAMES,getSocket,get:getSocket};
     return <SocketContext.Provider value={value}>
         {children}
     </SocketContext.Provider>
