@@ -38,7 +38,6 @@ export default function EnergySumaryLayout({...props}){
     energies.map((e)=>{
         if(!isObj(e) || !isNonNullString(e.device) || !isObj(e.payload) || !isObj(e.payload.value)) return;
         const type = e.device[0].toUpperCase();
-        console.log(type," is type heee")
         if(!METER_TYPES[type]){
             return;
         }
