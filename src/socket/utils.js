@@ -1,7 +1,7 @@
 
 import {isValidUrl,defaultStr,isNonNullString,uniqid,defaultVal,defaultDecimal,removeQueryString,setQueryParams} from "$utils";
 import {isJSON,parseJSON} from "$utils/json";
-import {getToken,isValidToken,getLoggedUserId} from "$cauth/utils";
+import {getToken,getLoggedUserId} from "$cauth/utils";
 import DateLib from "$date";
 import TYPES from "./types";
 import LOGICAL_NAMES from "./logicalNames";
@@ -35,9 +35,9 @@ export const buildURL = (url,queryParams)=>{
     queryParams= Object.assign({},queryParams);
     const user = Auth.getLoggedUser();
     if(user && user.id){
-        if(isValidToken(token)){
-            queryParams.token = token.token;
-         }
+        if(token){
+            queryParams.token = token;
+        }
          queryParams.userId = user.id;
     }
     queryParams.type = "client_app";
