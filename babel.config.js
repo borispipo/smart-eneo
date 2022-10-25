@@ -13,6 +13,7 @@ module.exports = function(api) {
       $assets : path.resolve(dir,"assets"),
       $layouts : path.resolve(src,"layouts"),
       $mainScreens : path.resolve(src,"screens","mainScreens"),
+      $apiCustom : path.resolve(src,"api","apiCustom"),
     }
     return require(`${require("@fto-consult/expo-ui/expo-ui-path")("babel.config")}`)(api,{base :dir,alias});
   };
