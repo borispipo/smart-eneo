@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 import APP from "$app";
-import { screenName as aboutScreenName} from "$screens/Help/About";
 import MertersContainer from "$screens/Devices/TreeView";
 import i18n from "$i18n";
 import theme from "$theme";
@@ -23,18 +22,5 @@ export default function drawerItems(){
         {
             divider : true,
         },
-        {
-            key : 'dataHelp',
-            label : 'Aide',
-            section : true,
-            divider : false,
-            items : [
-                {
-                    icon : 'help',
-                    label : 'A propos de '+name,
-                    routeName : aboutScreenName,
-                }
-            ]
-        }
     ]
 }

@@ -20,7 +20,9 @@ const config = {
     apiVersion : "1.0", 
     theme : {
         ligth : {
-            primary : "#00AB55",
+            //primary : "#00AB55",
+            primary  : "#00AB55",
+            primary : "red",
             secondary : "#354448",
         }
     }

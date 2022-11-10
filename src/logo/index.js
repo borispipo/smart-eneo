@@ -6,13 +6,14 @@ import Label from "$ecomponents/Label";
 import View from "$ecomponents/View";
 import theme from "$theme";
 import Avatar from "$ecomponents/Avatar";
+import Image from "$components/Image";
 export default {
     Text : function({styles,style,testID,...rest}){
         return <View testID={testID} style={style}>
                 <Label style={styles.medium}>Smart</Label>
                 <Label style={styles.large}>E</Label>
-                <Label style={styles.small}>N</Label>
-                <Label style={styles.medium}>EO</Label>
+                <Label style={styles.small}>E</Label>
+                <Label style={styles.medium}>M</Label>
         </View> 
     },
     Image : function(){
