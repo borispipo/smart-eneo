@@ -19,10 +19,9 @@ const config = {
     /****la version de l'api next côté serveur actuellement déployée */
     apiVersion : "1.0", 
     theme : {
-        ligth : {
+        light : {
             //primary : "#00AB55",
             primary  : "#00AB55",
-            primary : "red",
             secondary : "#354448",
         }
     }
