@@ -18,6 +18,7 @@ const config = {
     appId,
     /****la version de l'api next côté serveur actuellement déployée */
     apiVersion : "1.0", 
+    includeCredentialsOnApiFetch : false,
     theme : {
         light : {
             //primary : "#00AB55",
