@@ -6,7 +6,6 @@ import "$utils";
 
 export default {
     upsertUser : ({user})=>{
-        console.log(user," is upserted heeeee");
         return put('auth/user/{0}'.sprintf(user.id),{
             body : {
                 preferences : {
@@ -14,8 +13,6 @@ export default {
                     theme  : user.theme,
                 }
             }
-        }).then((data)=>{
-            console.log(data," is update preferences heeeee");
-        })
+        });
     }
 }
