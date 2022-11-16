@@ -209,7 +209,7 @@ export default function LoadCurveScreen(p){
         title={"Courbe des charges "+(isValidMeter?(" ["+meter.name+"]"):"")} >
         {isValidMeter ?<View style={[theme.styles.row,theme.styles.p1,theme.styles.flexWrap]}>
             <Label>Courbe des charge associée au compteur {" ["}</Label>
-            <Label textBold>{name}] {" "}</Label>
+            <Label textBold>{name} {" "}</Label>
             {hasDate ? <>
                 {startDateStr && dateEndRef.current ? <><Label>
                     pour la période allant du </Label><Label textBold>{startDateStr+" "}au{" "+endDateStr}</Label>
