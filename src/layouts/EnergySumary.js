@@ -20,6 +20,9 @@ import Icon from "$ecomponents/Icon";
 import Label from "$ecomponents/Label";
 import {isDesktopMedia} from "$dimensions";
 import Time from "$ecomponents/Date/Time";
+import Surface from "$components/Surface";
+import Divider from "$components/Divider";
+import { iconSize,meterIcon } from "$screens/Devices/TreeView/utils";
 
 export default function EnergySumaryLayout({...props}){
     const defaultStartPariod = DateLib.getFirstDayOfMonth();
@@ -35,12 +38,16 @@ export default function EnergySumaryLayout({...props}){
     const {sendBilanMessage} = useSocket();
     const values = {};
     const {energies} = state;
+    console.log(energies," is eee")
+    const metersByTypes = {};
     energies.map((e)=>{
         if(!isObj(e) || !isNonNullString(e.device) || !isObj(e.payload) || !isObj(e.payload.value)) return;
         const type = e.device[0].toUpperCase();
         if(!METER_TYPES[type]){
             return;
         }
+        metersByTypes[type] = defaultObj(metersByTypes[type]);
+        metersByTypes[type][e.device] = e.payload.value;
         values[type] = defaultObj(values[type]);
         Object.map(e.payload.value,(v,i)=>{
             if(typeof v !='number') return;
@@ -124,6 +131,42 @@ export default function EnergySumaryLayout({...props}){
                     />
                 </Cell>
             })}
+        </Grid>
+        <Grid>
+            <Cell tabletSize={12} desktopSize={8} phoneSize={12}>
+
+            </Cell>
+            <Cell tabletSize={6} desktopSize={4} phoneSize={12}>
+                <Surface elevation={10} style={[theme.styles.p1,theme.styles.w100,theme.styles.mv1]} >
+                    <Label textBold style={[theme.styles.w100,theme.styles.fs18,theme.styles.pv05,{textAlign:'center'}]}>
+                        Classement Consommation
+                    </Label>
+                    {Object.mapToArray(METER_TYPES,(type,code)=>{
+                        const tId = testID+"_MeterByTypes_"+code;
+                        return <View style={[theme.styles.w100]} key={code} testID={tId}>
+                            <Button color={type.color} upperCase={false} contentStyle={[theme.styles.justifyContentFlexStart]} icon={type.icon} testID={tId+"_Label"} style={[theme.styles.w100]}>
+                                {type.label}
+                            </Button>
+                            <Divider style={[theme.styles.w100]}/>
+                            <View style={[theme.styles.w100,theme.styles.ph05]}>
+                                {Object.mapToArray(metersByTypes[code],(values,meter)=>{
+                                    const canal = "canal"+(type.incoming ? "1" : type.outgoing ? "2" : "3"); 
+                                    const value = defaultNumber(values[canal]);
+                                    return <React.Fragment key={code+meter}>
+                                        <View style={[theme.styles.flexWrap,theme.styles.row,theme.styles.w100,theme.styles.justifyContentSpaceBetween]}>
+                                            <Button key={code+meter} color={theme.colors.text} style={[theme.styles.w100]} iconBefore={true} icon={meterIcon} contentStyle={[theme.styles.justifyContentFlexStart]}>
+                                                {meter}
+                                            </Button>
+                                            <Label style={[theme.styles.pl05]} textBold primary>{value.formatNumber()+" kwh"}</Label>
+                                        </View>
+                                        <Divider style={[theme.styles.w100]}/>
+                                    </React.Fragment>
+                                })}
+                            </View>
+                        </View>
+                    })}
+                </Surface>
+            </Cell>
         </Grid>
         <DialogProvider ref={dialogRef}/>
     </View>;

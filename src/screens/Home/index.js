@@ -13,6 +13,7 @@ export default function Home (props){
     const [state,setState] = React.useState({});
     
     return <Screen {...props} 
+        withScrollView
         testID = {"RN_MainScreenHome"}
     >
         <EnergySumary/>

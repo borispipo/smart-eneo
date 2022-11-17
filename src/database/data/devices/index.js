@@ -28,6 +28,7 @@ export const METER_TYPES = {
         key : "A",
         code : "incoming",
         label : "Entrant",
+        incoming : true,
         icon : "arrow-down",
         get color (){
             return theme.colors.success;
@@ -39,6 +40,7 @@ export const METER_TYPES = {
         key : "D",
         code : "outgoing",
         label : "Sortant",
+        outgoing : true,
         icon : "arrow-up",
         get color() {
             return theme.colors.error;
@@ -50,6 +52,7 @@ export const METER_TYPES = {
         key : "T",
         code : "auxiliary",
         label : "Auxiliaires",
+        auxiliary : true,
         icon : "format-align-middle",
         get color(){
             return theme.colors.warning;
