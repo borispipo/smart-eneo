@@ -1,7 +1,7 @@
 /**** les  paramètres statiques de configuration de l'application*/
 const appId = 'com.ftc.apps.device.smarteneo';
 const config = {
-    name : "Device Smart Eneo",//le nom de l'application,
+    name : "SmartEEM",//le nom de l'application,
     description : "Suivi des équipements Eneo",
     version : "1.0.0",
     /*** l'environnement d déploiement de l'apps 
