@@ -38,7 +38,6 @@ export default function EnergySumaryLayout({...props}){
     const {sendBilanMessage} = useSocket();
     const values = {};
     const {energies} = state;
-    console.log(energies," is eee")
     const metersByTypes = {};
     energies.map((e)=>{
         if(!isObj(e) || !isNonNullString(e.device) || !isObj(e.payload) || !isObj(e.payload.value)) return;
