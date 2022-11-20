@@ -224,6 +224,13 @@ export const sendBilanMessage = (socket,opts)=>{
     return sendMessage(socket,options,false);
 }
 
+///envoie du message GetAllDataRegister
+export const sendGetAllDataRegisterMessage = (socket,opts)=>{
+    const options = getSendMessageOptions(opts);
+    options.type = TYPES.GET_ALL_DATA_REGISTER;
+    return sendMessage(socket,options,false);
+}
+
 /***envoie d'une requête ping au niveau du serveur de socket */
 export const sendPingMessage = (socket,opts)=>{
     const options = getSendMessageOptions(opts);

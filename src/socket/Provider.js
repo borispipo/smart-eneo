@@ -1,7 +1,7 @@
 import React from "$react";
 import APP from "$app/instance";
 import {isNonNullString,isPromise,isObj,uniqid,defaultStr,defaultNumber,isValidUrl} from "$utils";
-import { connect as nCreateSocket,sendPingMessage as sPingMessage,sendMessage as sMessage,sendLoadCurveMessage as sLoadCurveMessage,sendBilanMessage as sBilanMessage,getLogicalName,REQUEST_DATE_TIME_FORMAT,getLogicalNames} from "./utils";
+import { connect as nCreateSocket,sendPingMessage as sPingMessage,sendMessage as sMessage,sendLoadCurveMessage as sLoadCurveMessage,sendGetAllDataRegisterMessage as sGetAllDataRegisterMessage,sendBilanMessage as sBilanMessage,getLogicalName,REQUEST_DATE_TIME_FORMAT,getLogicalNames} from "./utils";
 import TYPES from "./types";
 import LOGICAL_NAMES  from "./logicalNames";
 import Queue from "$utils/queue";
@@ -144,6 +144,9 @@ export default function SocketProvider(props){
     const sendPingMessage = (options)=>{
         return sendMessage(options,sPingMessage);
     }
+    const sendGetAllDataRegisterMessage = (options)=>{
+        return sendMessage(options,sGetAllDataRegisterMessage);
+    }
     React.useEffect(()=>{       
         const onLoginUser = (u)=>{
             connect(url,socketOptions);
@@ -163,7 +166,7 @@ export default function SocketProvider(props){
             APP.off(APP.EVENTS.AUTH_LOGIN_USER,onLoginUser);
         }
     },[])
-    const value = {connect,...context,REQUEST_DATE_TIME_FORMAT,getLogicalName,getLogicalNames,sendPingMessage,sendMessage,sendLoadCurveMessage,sendBilanMessage,canSendMessage,context,bind,unbind,TYPES,LOGICAL_NAMES,getSocket,get:getSocket};
+    const value = {connect,...context,REQUEST_DATE_TIME_FORMAT,getLogicalName,getLogicalNames,sendPingMessage,sendMessage,sendLoadCurveMessage,sendBilanMessage,canSendMessage,context,bind,unbind,TYPES,LOGICAL_NAMES,getSocket,get:getSocket,sendGetAllDataRegisterMessage};
     return <SocketContext.Provider value={value}>
         {children}
     </SocketContext.Provider>

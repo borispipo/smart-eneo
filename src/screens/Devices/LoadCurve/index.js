@@ -3,7 +3,7 @@ import { useSocket } from "$socket";
 import DateLib from "$lib/date";
 import Preloader from "$preloader";
 import notify from "$notify";
-import DatePicker from "$ecomponents/Date";
+import DateTime from "$ecomponents/Date/DateTime";
 import Provider from "$ecomponents/Dialog/Provider";
 import Auth from "$cauth";
 import Icon from "$ecomponents/Icon";
@@ -51,9 +51,8 @@ const defaultDisplayFormat = "dd/mm/yyyy HH:MM";
 const defaultParsedFormat = "JJ/MM/YYYY HH:MM";
 
 export const getDateComponent = ({onChange,label,defaultValue,...props},ref)=>{
-    return <DatePicker
+    return <DateTime
         {...props}
-        mode = "datetime"
         label = {label}
         defaultValue = {defaultValue}
         onChange = {(args)=>{

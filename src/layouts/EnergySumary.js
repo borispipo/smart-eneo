@@ -23,14 +23,13 @@ import Time from "$ecomponents/Date/Time";
 import Surface from "$components/Surface";
 import Divider from "$components/Divider";
 import { iconSize,meterIcon } from "$screens/Devices/TreeView/utils";
+import { ScrollView } from "react-native";
 
 export default function EnergySumaryLayout({...props}){
     const defaultStartPariod = DateLib.getFirstDayOfMonth();
     const dialogRef = React.useRef(null);
     const startPeriodRef = React.useRef(defaultStartPariod);
     const endPeriodRef = React.useRef(new Date());
-    const startPeriodTimerRef = React.useRef("00:00");
-    const endPeriodTimeRef = React.useRef("00:00");
     const [state,setState] = React.useState({
         energies : [],
         isLoading : true,
@@ -77,17 +76,15 @@ export default function EnergySumaryLayout({...props}){
     const setDates = ()=>{
         DialogProvider.open({
             title :"Période d'exécution de la requête",
+            subtitle : false,
             fields : {
                 startPeriod : {
-                    type : "date",
+                    type : "datetime",
                     defaultValue : startPeriodRef.current,
                     label : 'Période de début',
-                    /*right : (p)=><Time style={{width:60}} enableCopy={false} defaultValue={startPeriodTimerRef.current} onChange={(a)=>{
-                        console.log(a," is changed heinn")
-                    }}/>*/
                 },
                 endPeriod : {
-                    type : "date",
+                    type : "datetime",
                     defaultValue : endPeriodRef.current,
                     label : 'Période de fin'
                 }
@@ -121,16 +118,18 @@ export default function EnergySumaryLayout({...props}){
                 Actualiser
             </Button>
         </View>
-        <Grid testID={testID+"_Grid"}>
-            {Object.mapToArray(METER_TYPES,(type,t)=>{
-                return <Cell key={t} tabletSize={6} desktopSize={4} phoneSize={12} smallPhoneSize={12}>
-                    <EnergySumaryItem
-                        data = {values[t]}
-                        meterType = {type}
-                    />
-                </Cell>
-            })}
-        </Grid>
+        <View>
+            <Grid testID={testID+"_Grid"}>
+                {Object.mapToArray(METER_TYPES,(type,t)=>{
+                    return <Cell key={t} tabletSize={6} style={[{maxHeight:'100%'}]} desktopSize={4} phoneSize={12} smallPhoneSize={12}>
+                        <EnergySumaryItem
+                            data = {values[t]}
+                            meterType = {type}
+                        />
+                    </Cell>
+                })}
+            </Grid>
+        </View>
         <Grid>
             <Cell tabletSize={12} desktopSize={8} phoneSize={12}>
 
@@ -140,30 +139,32 @@ export default function EnergySumaryLayout({...props}){
                     <Label textBold style={[theme.styles.w100,theme.styles.fs18,theme.styles.pv05,{textAlign:'center'}]}>
                         Classement Consommation
                     </Label>
-                    {Object.mapToArray(METER_TYPES,(type,code)=>{
-                        const tId = testID+"_MeterByTypes_"+code;
-                        return <View style={[theme.styles.w100]} key={code} testID={tId}>
-                            <Button color={type.color} upperCase={false} contentStyle={[theme.styles.justifyContentFlexStart]} icon={type.icon} testID={tId+"_Label"} style={[theme.styles.w100]}>
-                                {type.label}
-                            </Button>
-                            <Divider style={[theme.styles.w100]}/>
-                            <View style={[theme.styles.w100,theme.styles.ph05]}>
-                                {Object.mapToArray(metersByTypes[code],(values,meter)=>{
-                                    const canal = "canal"+(type.incoming ? "1" : type.outgoing ? "2" : "3"); 
-                                    const value = defaultNumber(values[canal]);
-                                    return <React.Fragment key={code+meter}>
-                                        <View style={[theme.styles.flexWrap,theme.styles.row,theme.styles.w100,theme.styles.justifyContentSpaceBetween]}>
-                                            <Button key={code+meter} color={theme.colors.text} style={[theme.styles.w100]} iconBefore={true} icon={meterIcon} contentStyle={[theme.styles.justifyContentFlexStart]}>
-                                                {meter}
-                                            </Button>
-                                            <Label style={[theme.styles.pl05]} textBold primary>{value.formatNumber()+" kwh"}</Label>
-                                        </View>
-                                        <Divider style={[theme.styles.w100]}/>
-                                    </React.Fragment>
-                                })}
+                    <ScrollView vertical testID={testID+"_ScrollView"}>
+                        {Object.mapToArray(METER_TYPES,(type,code)=>{
+                            const tId = testID+"_MeterByTypes_"+code;
+                            return <View style={[theme.styles.w100]} key={code} testID={tId}>
+                                <Button color={type.color} upperCase={false} contentStyle={[theme.styles.justifyContentFlexStart]} icon={type.icon} testID={tId+"_Label"} style={[theme.styles.w100]}>
+                                    {type.label}
+                                </Button>
+                                <Divider style={[theme.styles.w100]}/>
+                                <View style={[theme.styles.w100,theme.styles.ph05]}>
+                                    {Object.mapToArray(metersByTypes[code],(values,meter)=>{
+                                        const canal = "canal"+(type.incoming ? "1" : type.outgoing ? "2" : "3"); 
+                                        const value = defaultNumber(values[canal]);
+                                        return <React.Fragment key={code+meter}>
+                                            <View style={[theme.styles.flexWrap,theme.styles.row,theme.styles.w100,theme.styles.justifyContentSpaceBetween]}>
+                                                <Button key={code+meter} color={theme.colors.text} style={[theme.styles.w100]} iconBefore={true} icon={meterIcon} contentStyle={[theme.styles.justifyContentFlexStart]}>
+                                                    {meter}
+                                                </Button>
+                                                <Label style={[theme.styles.pl05]} textBold primary>{value.formatNumber()+" kwh"}</Label>
+                                            </View>
+                                            <Divider style={[theme.styles.w100]}/>
+                                        </React.Fragment>
+                                    })}
+                                </View>
                             </View>
-                        </View>
-                    })}
+                        })}
+                    </ScrollView>
                 </Surface>
             </Cell>
         </Grid>
