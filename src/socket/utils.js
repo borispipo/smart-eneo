@@ -45,15 +45,20 @@ export const buildURL = (url,queryParams)=>{
 }
 export const MANAGER = {};
 
+const autoReconnectRef = {
+    current : true
+}
 export function connect (url,options){
     options = defaultObj(options);
     let {events,onOpen,onClose,onSignedOut,onMessage,onDisconnect,onError,protocol,queryParams,...rest} = options;
     const {queryParams : query} = buildURL(url,queryParams) ;
-    const params = JSON.stringify(query);
+    if(!query.token) return null;
+    autoReconnectRef.current = true;
     const socket = io(SOCKET_URL, {
         auth: {
           token: query.token,
         },
+        //autoConnect : true,
         query
     });
     socket.on("connect", (args) => {
@@ -68,7 +73,9 @@ export function connect (url,options){
         });
     });
     socket.on("disconnect", () => {
-        socket.connect();
+        if(autoReconnectRef.current){
+            socket.connect();
+        }
         if(typeof onDisconnect ==='function'){
             onDisconnect();
         }
@@ -86,8 +93,38 @@ export function connect (url,options){
             onError(error);
         }
     });
+    socket.on("ACTIVITY_MESSAGE",(data)=>{
+        console.log(data," is active message");
+    });
     socket.isConnected = typeof socket.isConnected =='function'? socket.isConnected : ()=>socket.connected || !socket.disconnected;
+    setTimeout(()=>{
+        if(!socket.isConnected()){
+            try {
+                socket.connect();
+            } catch{}
+        }
+    },500);
+    socket.id = uniqid("socket-connection-id");
+    MANAGER[socket.id] = socket;
     return socket;
+}
+const _disconnect = (socket,id)=>{
+    autoReconnectRef.current = false;
+    try {
+        socket.disconnect();
+    } catch (e){
+        console.log("disconnecting socket ",socket);
+    }
+    delete MANAGER[id];
+}
+export const disconnect = (id)=>{
+    autoReconnectRef.current = false;
+    if(id && typeof id =='string' && MANAGER[id]){
+        return _disconnect(MANAGER[id],id);
+    }
+    Object.map(MANAGER,(socket,id)=>{
+        _disconnect(socket,id);
+    });
 }
 
 export const getSendMessageOptions = (opts) =>{
@@ -255,6 +292,21 @@ export const createSocket = (url,options)=>{
     }
     options = defaultObj(options);
     return connect(url,options);
+}
+
+/**** retourne les logicalNames associés au compteur meter passé en paramètre
+ * @param {object} meter, l'objet compteur sur lequel on veut récupérer les logicalNames
+ * @param {function} filter, function de filtre permettant de filtrer les logicalsNames à récupérer
+ */
+export const getLogicalNames = (meter,filter)=>{
+    if(!isObj(meter)) return "";
+    const names = [];
+    filter = typeof filter =='function'? filter : x=>true;
+    Object.map(meter.objets,(info)=>{
+        if(!isObj(info) || !isNonNullString(info.code) || !filter(info))return;
+        names.push(info.code)
+    });
+    return names.join(",");
 }
 
 

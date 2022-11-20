@@ -9,6 +9,7 @@ import { LOAD_CURVE } from "../routes";
 import { iconSize,meterIcon } from "./utils";
 import {useDrawer} from "$ecomponents/Drawer";
 import theme from "$theme";
+import {isObj} from "$utils";
 import { getBackgroundColor } from "$ecomponents/Drawer/DrawerItems/utils";
 
 export default function MeterItemContainer (props){
@@ -18,7 +19,8 @@ export default function MeterItemContainer (props){
     });
     const {name,gaId} = meter;
     const buttonRef = React.useRef(null);
-    const {sendPingMessage} = useSocket();
+    const {sendPingMessage,getLogicalNames,sendGetAllDataRegisterMessage} = useSocket();
+    
     const opts = {
         gaId,
         deviceName : name,
@@ -37,6 +39,12 @@ export default function MeterItemContainer (props){
     
     React.useEffect(()=>{
         checkPing();
+        sendGetAllDataRegisterMessage({
+            ...opts,
+            logicalNames : getLogicalNames(meter,(info)=>info.code != 'GENERIC_PROFILE')
+        }).then(data=>{
+            console.log(data," is get send message ddddd form meter ",meter);
+        })
     },[]);
     const d = useDrawer();
     const color = state.online?theme.colors.success:theme.colors.error;

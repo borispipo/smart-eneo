@@ -1,7 +1,7 @@
 import React from "$react";
 import APP from "$app/instance";
 import {isNonNullString,isPromise,isObj,uniqid,defaultStr,defaultNumber,isValidUrl} from "$utils";
-import { connect as nCreateSocket,sendPingMessage as sPingMessage,sendMessage as sMessage,sendLoadCurveMessage as sLoadCurveMessage,sendGetAllDataRegisterMessage as sGetAllDataRegisterMessage,sendBilanMessage as sBilanMessage,getLogicalName,REQUEST_DATE_TIME_FORMAT,getLogicalNames} from "./utils";
+import { connect as nCreateSocket,disconnect as disconnectSockeck,sendPingMessage as sPingMessage,sendMessage as sMessage,sendLoadCurveMessage as sLoadCurveMessage,sendGetAllDataRegisterMessage as sGetAllDataRegisterMessage,sendBilanMessage as sBilanMessage,getLogicalName,REQUEST_DATE_TIME_FORMAT,getLogicalNames,buildURL} from "./utils";
 import TYPES from "./types";
 import LOGICAL_NAMES  from "./logicalNames";
 import Queue from "$utils/queue";
@@ -116,9 +116,13 @@ export default function SocketProvider(props){
         }
     },[options])
     const connect = ()=>{
-        if(hasSocket()) return;
+        if(hasSocket() || socketRef.current && socketRef.current.isConnected()) return;
         socketRef.current = nCreateSocket(url,socketOptions);
         return socketRef.current;
+    }
+    const disconnect = ()=>{
+        disconnectSockeck();
+        socketRef.current = null;
     }
     const sendMessage = (options,method)=>{
         method = typeof method =="function"? method : sMessage;
@@ -151,22 +155,18 @@ export default function SocketProvider(props){
         const onLoginUser = (u)=>{
             connect(url,socketOptions);
         };
-        const onGoOnline = ()=>{
-            //connect(url,socketOptions);
+        const onLogoutUser = ()=>{
+            disconnect();
         }
-        const onGoOffline = ()=>{
-        }
-        APP.on(APP.EVENTS.GO_ONLINE,onGoOnline);
-        APP.on(APP.EVENTS.GO_OFFLINE,onGoOffline);
         APP.on(APP.EVENTS.AUTH_LOGIN_USER,onLoginUser);
+        APP.on(APP.EVENTS.AUTH_LOGOUT_USER,onLogoutUser);
         connect();
         return ()=>{
-            APP.off(APP.EVENTS.GO_ONLINE,onGoOnline);
-            APP.off(APP.EVENTS.GO_OFFLINE,onGoOffline);
             APP.off(APP.EVENTS.AUTH_LOGIN_USER,onLoginUser);
+            APP.off(APP.EVENTS.AUTH_LOGOUT_USER,onLogoutUser);
         }
     },[])
-    const value = {connect,...context,REQUEST_DATE_TIME_FORMAT,getLogicalName,getLogicalNames,sendPingMessage,sendMessage,sendLoadCurveMessage,sendBilanMessage,canSendMessage,context,bind,unbind,TYPES,LOGICAL_NAMES,getSocket,get:getSocket,sendGetAllDataRegisterMessage};
+    const value = {connect,disconnect,...context,REQUEST_DATE_TIME_FORMAT,getLogicalName,getLogicalNames,sendPingMessage,sendMessage,sendLoadCurveMessage,sendBilanMessage,canSendMessage,context,bind,unbind,TYPES,LOGICAL_NAMES,getSocket,get:getSocket,sendGetAllDataRegisterMessage};
     return <SocketContext.Provider value={value}>
         {children}
     </SocketContext.Provider>

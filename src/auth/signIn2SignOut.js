@@ -7,12 +7,15 @@ import "$utils";
 export default {
     upsertUser : ({user})=>{
         return put('auth/user/{0}'.sprintf(user.id),{
-            body : {
+            headers : {
+                "Content-Type" : "multipart/form-data"
+            },
+            body : Object.toFormData({
                 preferences : {
                     avatar : undefined,
                     theme  : user.theme,
                 }
-            }
+            })
         });
     }
 }
