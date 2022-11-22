@@ -90,7 +90,11 @@ const LoadCurveScreen = React.forwardRef((p,ref)=>{
         deviceName : name,
         logicalNames : getLogicalNames(),
     };
-    const getLoadCurve = ()=>{
+    const hasDate = dateStartRef.current || dateEndRef.current? true : false;
+    const startDateStr = DateLib.isValid(dateStartRef.current)?dateStartRef.current.toFormat(LOAD_CURVE_DATA_LENGTH):undefined,
+          endDateStr = DateLib.isValid(dateEndRef.current)? dateEndRef.current.toFormat(LOAD_CURVE_DATA_LENGTH):undefined;
+  
+    const refresh = ()=>{
         if(!isValidMeter) return;
         const op = {...opts, dateStart : dateStartRef.current,dateEnd : dateEndRef.current};
         if(op.dateStart && !op.dateEnd || (op.dateEnd && !op.dateStart)){
@@ -154,27 +158,24 @@ const LoadCurveScreen = React.forwardRef((p,ref)=>{
         if((meter.name === prevMeter.name && (startDatePeriod == dateStartRef.current) && (endDatePeriod == dateEndRef.current))) return;
         dateStartRef.current = startDatePeriod;
         dateEndRef.current = endDatePeriod;
-        getLoadCurve();
+        refresh();
     },[meter,startDatePeriod,endDatePeriod])
     React.useEffect(()=>{
-        getLoadCurve();
+        refresh();
     },[]);
-    const hasDate = dateStartRef.current || dateEndRef.current? true : false;
-    const startDateStr = DateLib.isValid(dateStartRef.current)?dateStartRef.current.toFormat(LOAD_CURVE_DATA_LENGTH):undefined,
-          endDateStr = DateLib.isValid(dateEndRef.current)? dateEndRef.current.toFormat(LOAD_CURVE_DATA_LENGTH):undefined;
     const Wrapper = withScreen!= false ? Screen : React.Fragment;
     const title = "Courbe des charges "+(isValidMeter?(" ["+meter.name+"]"):"");
     const wrapperProps = withScreen != false ? {
         ...props,
         appBarProps : {actions :[{
             icon : 'refresh',
-            onPress : getLoadCurve,
+            onPress : refresh,
             text : 'Actualiser'
         }]},
         title
     } : {};
     React.setRef({
-        refresh : getLoadCurve,
+        refresh,
         title ,
     });
     return <Wrapper {...wrapperProps} >

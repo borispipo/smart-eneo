@@ -65,7 +65,15 @@ export default function EnergySumaryLayout({...props}){
             new Promise((resolve)=>{
                 if(!meterRef.current){
                     getMetersListFromType(METER_TYPES[type]).then((m)=>{
-                        meterRef.current = m[0];
+                        m.map((_)=>{
+                            if(isObj(_) && _.name =="A_80_LOCBABA"){
+                                meterRef.current = _;
+                                return;
+                            }
+                        });
+                        if(!meterRef.current){
+                            meterRef.current = m[0];
+                        }
                     }).finally(()=>{
                         resolve(meterRef.current);
                     })
