@@ -59,33 +59,39 @@ export default function EnergySumaryLayout({...props}){
         
     });
     const refreshBilan = ()=>{
-        Preloader.open("Récupération de la courbe des charges...");
-        return sendBilanMessage({
-            dateStart : startPeriodRef.current,
-            dateEnd : endPeriodRef.current,
-        }).then(({payload:{value}})=>{
-            if(Array.isArray(value)){
-                setState({...state,energies:value,isLoading:false});
-            }
-        }).catch((e)=>{
-            notify.error(e);
+        Preloader.open("Récupération des données...");
+        const type = Object.keys(METER_TYPES)[0];
+        Promise.all([
+            new Promise((resolve)=>{
+                if(!meterRef.current){
+                    getMetersListFromType(METER_TYPES[type]).then((m)=>{
+                        meterRef.current = m[0];
+                    }).finally(()=>{
+                        resolve(meterRef.current);
+                    })
+                } else {
+                    resolve(meterRef.current);
+                }
+            }),
+            new Promise((resolve,reject)=>{
+                sendBilanMessage({
+                    dateStart : startPeriodRef.current,
+                    dateEnd : endPeriodRef.current,
+                }).then(({payload:{value}})=>{
+                    resolve({energies:Array.isArray(value)? value : []})
+                }).catch((e)=>{
+                    notify.error(e);
+                    resolve({});
+                })
+            })
+        ]).then(([meter,state])=>{
             setState({...state,isLoading:false})
         }).finally(()=>{
             Preloader.close();
         })
     }
     React.useEffect(()=>{
-        setTimeout(()=>{
-            refreshBilan().finally(()=>{
-                setTimeout(()=>{
-                    const type = Object.keys(METER_TYPES)[0];
-                    getMetersListFromType(METER_TYPES[type]).then((m)=>{
-                        meterRef.current = m[0];
-                        forceRender();
-                    });
-                },1000);
-            });
-        },1000);
+        setTimeout(refreshBilan,1000);
     },[]);
     const setDates = ()=>{
         DialogProvider.open({
@@ -150,6 +156,8 @@ export default function EnergySumaryLayout({...props}){
                     <LoadCurveScreen
                         withScreen = {false}
                         meter = {meterRef.current}
+                        startDate = {startPeriodRef.current}
+                        endDate = {endPeriodRef.current}
                     />
                 </Surface>
             </Cell>

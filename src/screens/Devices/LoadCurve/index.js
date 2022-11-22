@@ -1,4 +1,4 @@
-import {isObj,isNonNullString,isArray} from "$utils";
+import {isObj,isNonNullString,defaultVal,isArray} from "$utils";
 import { useSocket } from "$socket";
 import DateLib from "$lib/date";
 import Preloader from "$preloader";
@@ -67,15 +67,17 @@ export const getDateComponent = ({onChange,label,defaultValue,...props},ref)=>{
     />
 }
 const LoadCurveScreen = React.forwardRef((p,ref)=>{
-    let {meter,testID,withScreen,...props} = getScreenProps(p);
+    let {meter,testID,withScreen,startDate:startDatePeriod,endDate:endDatePeriod,...props} = getScreenProps(p);
     const [state,setState] = React.useState({
         loadCurve : null,
         hasError : false,
         hasLoad : false,
         isInitialized : false,
     });
-    const dateStartRef = React.useRef(defaultStartPeriod);
-    const dateEndRef = React.useRef(defaultEndPeriod);
+    startDatePeriod = defaultVal(startDatePeriod,defaultStartPeriod);
+    endDatePeriod = defaultVal(endDatePeriod,defaultEndPeriod);
+    const dateStartRef = React.useRef(startDatePeriod);
+    const dateEndRef = React.useRef(endDatePeriod);
     testID = defaultStr(testID,"RN_LoadCurveScreen");
     meter = defaultObj(meter);
     const chartDateFormatRef = React.useRef(defaultStr(Auth.getSessionData(CHART_DATE_SESSION_FORMAT),defaultDisplayFormat))
@@ -149,17 +151,17 @@ const LoadCurveScreen = React.forwardRef((p,ref)=>{
         />
     }
     React.useEffect(()=>{
-        if((meter.name === prevMeter.name)) return;
-        dateStartRef.current = defaultStartPeriod;
-        dateEndRef.current = defaultEndPeriod;
+        if((meter.name === prevMeter.name && (startDatePeriod == dateStartRef.current) && (endDatePeriod == dateEndRef.current))) return;
+        dateStartRef.current = startDatePeriod;
+        dateEndRef.current = endDatePeriod;
         getLoadCurve();
-    },[meter])
+    },[meter,startDatePeriod,endDatePeriod])
     React.useEffect(()=>{
         getLoadCurve();
     },[]);
     const hasDate = dateStartRef.current || dateEndRef.current? true : false;
-    const startDateStr = DateLib.isObj(dateStartRef.current)? dateStartRef.current.toFormat(LOAD_CURVE_DATA_LENGTH) : defaultStr(dateStartRef.current),
-          endDateStr = DateLib.isObj(dateEndRef.current)? dateEndRef.current.toFormat(LOAD_CURVE_DATA_LENGTH) : defaultStr(dateEndRef.current);
+    const startDateStr = DateLib.isValid(dateStartRef.current)?dateStartRef.current.toFormat(LOAD_CURVE_DATA_LENGTH):undefined,
+          endDateStr = DateLib.isValid(dateEndRef.current)? dateEndRef.current.toFormat(LOAD_CURVE_DATA_LENGTH):undefined;
     const Wrapper = withScreen!= false ? Screen : React.Fragment;
     const title = "Courbe des charges "+(isValidMeter?(" ["+meter.name+"]"):"");
     const wrapperProps = withScreen != false ? {
