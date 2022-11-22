@@ -24,12 +24,16 @@ import Surface from "$components/Surface";
 import Divider from "$components/Divider";
 import { iconSize,meterIcon } from "$screens/Devices/TreeView/utils";
 import { ScrollView } from "react-native";
+import LoadCurveScreen from "$screens/Devices/LoadCurve";
+import { getMetersListFromType } from "$database/data/devices";
 
 export default function EnergySumaryLayout({...props}){
     const defaultStartPariod = DateLib.getFirstDayOfMonth();
     const dialogRef = React.useRef(null);
     const startPeriodRef = React.useRef(defaultStartPariod);
     const endPeriodRef = React.useRef(new Date());
+    const meterRef = React.useRef(null);
+    const forceRender = React.useForceRender();
     const [state,setState] = React.useState({
         energies : [],
         isLoading : true,
@@ -56,7 +60,7 @@ export default function EnergySumaryLayout({...props}){
     });
     const refreshBilan = ()=>{
         Preloader.open("Récupération de la courbe des charges...");
-        sendBilanMessage({
+        return sendBilanMessage({
             dateStart : startPeriodRef.current,
             dateEnd : endPeriodRef.current,
         }).then(({payload:{value}})=>{
@@ -71,7 +75,17 @@ export default function EnergySumaryLayout({...props}){
         })
     }
     React.useEffect(()=>{
-        refreshBilan();
+        setTimeout(()=>{
+            refreshBilan().finally(()=>{
+                setTimeout(()=>{
+                    const type = Object.keys(METER_TYPES)[0];
+                    getMetersListFromType(METER_TYPES[type]).then((m)=>{
+                        meterRef.current = m[0];
+                        forceRender();
+                    });
+                },1000);
+            });
+        },1000);
     },[]);
     const setDates = ()=>{
         DialogProvider.open({
@@ -132,10 +146,15 @@ export default function EnergySumaryLayout({...props}){
         </View>
         <Grid>
             <Cell tabletSize={12} desktopSize={8} phoneSize={12}>
-
+                <Surface>
+                    <LoadCurveScreen
+                        withScreen = {false}
+                        meter = {meterRef.current}
+                    />
+                </Surface>
             </Cell>
             <Cell tabletSize={6} desktopSize={4} phoneSize={12}>
-                <Surface elevation={10} style={[theme.styles.p1,theme.styles.w100,theme.styles.mv1]} >
+                <Surface elevation={10} style={[theme.styles.p1,theme.styles.mt0,theme.styles.w100,theme.styles.mv1]} >
                     <Label textBold style={[theme.styles.w100,theme.styles.fs18,theme.styles.pv05,{textAlign:'center'}]}>
                         Classement Consommation
                     </Label>

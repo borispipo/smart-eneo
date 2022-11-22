@@ -12,6 +12,9 @@ export {gaDBName as dbName};
 export const METER_DB_NAME_PREFIX = "meter-db-";
 
 export const getMeterDBNameFromType = (str)=>{
+    if(isObj(str) && isNonNullString(str.key)){
+        str = str.key;
+    }
     if(!isNonNullString(str)) return undefined;
     str = str.trim();
     if(METER_TYPES[str.toUpperCase()]){

@@ -66,8 +66,8 @@ export const getDateComponent = ({onChange,label,defaultValue,...props},ref)=>{
         }}
     />
 }
-export default function LoadCurveScreen(p){
-    let {meter,testID,...props} = getScreenProps(p);
+const LoadCurveScreen = React.forwardRef((p,ref)=>{
+    let {meter,testID,withScreen,...props} = getScreenProps(p);
     const [state,setState] = React.useState({
         loadCurve : null,
         hasError : false,
@@ -157,55 +157,25 @@ export default function LoadCurveScreen(p){
     React.useEffect(()=>{
         getLoadCurve();
     },[]);
-    const startDateC = getDateComponent({
-        label : i18n.lang("start_period"),
-        defaultValue : dateStartRef.current,
-    },dateStartRef), 
-    endDateC = getDateComponent({
-        label : i18n.lang("end_period"),
-        defaultValue : dateEndRef.current,
-    },dateEndRef);
     const hasDate = dateStartRef.current || dateEndRef.current? true : false;
     const startDateStr = DateLib.isObj(dateStartRef.current)? dateStartRef.current.toFormat(LOAD_CURVE_DATA_LENGTH) : defaultStr(dateStartRef.current),
           endDateStr = DateLib.isObj(dateEndRef.current)? dateEndRef.current.toFormat(LOAD_CURVE_DATA_LENGTH) : defaultStr(dateEndRef.current);
-    const endIcon = <Icon icon="cog" onClick={(e)=>{
-        React.stopEventPropagation(e);
-        Provider.open({
-            title : "Paramètres",
-            actions : [{
-                icon : 'check',
-                text : "Enregistrer",
-                onClick : (args)=>{
-                    Auth.setSessionData(CHART_DATE_SESSION_FORMAT,chartDateFormatRef.current);
-                    Provider.close();
-                    getLoadCurve();
-                }
-            }],
-            content : <View style={{height:'300px',padding:10}}>
-                <Label>
-                    Format d'affichage des données du graphe : exemple : dd/mm/yyyy HH:MM:ss avec 
-                    <Label> d : Jour, m: Mois, H : heure, M:minute, s : Séconde</Label>
-                </Label>
-                <TextField defaultValue={chartDateFormatRef.current} 
-                    onChange = {({value})=>{
-                        chartDateFormatRef.current = value;
-                    }}
-                    label={"Format"}>
-
-                </TextField>
-            </View>
-        });
-        console.log(e," is cliqueeee")
-    }}/>
-    return <Screen 
-        {...props}
-        appBarProps = {{actions :[
-            {
-                icon : 'refresh',
-                onPress : getLoadCurve,
-                text : 'Actualiser'
-            }]}}
-        title={"Courbe des charges "+(isValidMeter?(" ["+meter.name+"]"):"")} >
+    const Wrapper = withScreen!= false ? Screen : React.Fragment;
+    const title = "Courbe des charges "+(isValidMeter?(" ["+meter.name+"]"):"");
+    const wrapperProps = withScreen != false ? {
+        ...props,
+        appBarProps : {actions :[{
+            icon : 'refresh',
+            onPress : getLoadCurve,
+            text : 'Actualiser'
+        }]},
+        title
+    } : {};
+    React.setRef({
+        refresh : getLoadCurve,
+        title ,
+    });
+    return <Wrapper {...wrapperProps} >
         {isValidMeter ?<View style={[theme.styles.row,theme.styles.p1,theme.styles.flexWrap]}>
             <Label>Courbe des charge associée au compteur {" ["}</Label>
             <Label textBold>{name}] {" "}</Label>
@@ -224,7 +194,9 @@ export default function LoadCurveScreen(p){
         <View>
             {content}
         </View>
-    </Screen>
-}
-
+    </Wrapper>
+});
+LoadCurveScreen.displayName = "LoadCurveScreen";
 LoadCurveScreen.screenName = screenName;
+
+export default LoadCurveScreen;
