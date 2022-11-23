@@ -26,6 +26,7 @@ import { iconSize,meterIcon } from "$screens/Devices/TreeView/utils";
 import { ScrollView } from "react-native";
 import LoadCurveScreen from "$screens/Devices/LoadCurve";
 import { getMetersListFromType } from "$database/data/devices";
+import Fab from "$elayouts/Fab";
 
 export default function EnergySumaryLayout({...props}){
     const defaultStartPariod = DateLib.getFirstDayOfMonth();
@@ -138,14 +139,6 @@ export default function EnergySumaryLayout({...props}){
     const periodeTitle = (startPeriodRef.current.toFormat()+" => "+endPeriodRef.current.toFormat());
     const testID = "RN_EnergySumarryScreen";
     return <View style={[theme.styles.w100,theme.styles.ph1]} testID={testID}>
-        <View style={[theme.styles.w100,theme.styles.row,theme.styles.flexWrap,theme.styles.rowReverse]}>
-            {false && isDesktopMedia() ? <Label textBold>Bilan énergetique sur la période : {periodeTitle}</Label>:null}
-            <Button title={"Bilan énergetique sur la période : "+periodeTitle} onPress={refreshBilan} icon={"refresh"}
-                right = {(p)=><Icon {...p} name="calendar"  onPress={setDates}/>}
-            >
-                Actualiser
-            </Button>
-        </View>
         <View>
             <Grid testID={testID+"_Grid"}>
                 {Object.mapToArray(METER_TYPES,(type,t)=>{
@@ -203,6 +196,25 @@ export default function EnergySumaryLayout({...props}){
                 </Surface>
             </Cell>
         </Grid>
+        <Fab
+            icon = "calendar"
+            visible
+            actions ={[
+                {
+                    text : "Actualiser",
+                    icon : "refresh",
+                    primary  : true,
+                    onPress : refreshBilan,
+                    title : "Bilan énergetique sur la période : "+periodeTitle,
+                },
+                {
+                    text : "Modifier période",
+                    icon : "calendar",
+                    onPress : setDates,
+                    secondary : true,
+                }
+            ]}
+        />
         <DialogProvider ref={dialogRef}/>
     </View>;
 }
