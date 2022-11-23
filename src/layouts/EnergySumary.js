@@ -203,7 +203,7 @@ export default function EnergySumaryLayout({...props}){
                 {
                     text : "Actualiser",
                     icon : "refresh",
-                    info  : true,
+                    error  : true,
                     onPress : refreshBilan,
                     title : "Bilan énergetique sur la période : "+periodeTitle,
                 },

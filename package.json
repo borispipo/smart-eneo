@@ -12,7 +12,7 @@
   },
   "private": true,
   "dependencies": {
-    "@fto-consult/expo-ui": "^2.4.7",
+    "@fto-consult/expo-ui": "^2.4.8",
     "expo-cli": "^6.0.8",
     "react-native": "0.70.5",
     "socket.io-client": "^4.5.3"
