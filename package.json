@@ -11,6 +11,10 @@
     "build-cloudflare": "npm install && npx expo export:web"
   },
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/borispipo/smart-eneo.git"
+  },
   "dependencies": {
     "@fto-consult/expo-ui": "^2.9.0",
     "expo-cli": "^6.0.8",
