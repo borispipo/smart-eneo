@@ -15,7 +15,6 @@ import DateComponent from "$ecomponents/Date";
 import Button from "$ecomponents/Button";
 import notify from "$notify";
 import { StyleSheet } from "react-native";
-import DialogProvider from "$ecomponents/Form/FormData/DialogProvider";
 import Icon from "$ecomponents/Icon";
 import Label from "$ecomponents/Label";
 import {isDesktopMedia} from "$dimensions";
@@ -26,22 +25,20 @@ import { iconSize,meterIcon } from "$screens/Devices/TreeView/utils";
 import { ScrollView } from "react-native";
 import LoadCurveScreen from "$screens/Devices/LoadCurve";
 import { getMetersListFromType } from "$database/data/devices";
-import Fab from "$elayouts/Fab";
 
 export default function EnergySumaryLayout({...props}){
     const defaultStartPariod = DateLib.getFirstDayOfMonth();
-    const dialogRef = React.useRef(null);
-    const startPeriodRef = React.useRef(defaultStartPariod);
-    const endPeriodRef = React.useRef(new Date());
+    const startDateRef = React.useRef(defaultStartPariod);
+    const endDateRef = React.useRef(new Date());
     const meterRef = React.useRef(null);
-    const forceRender = React.useForceRender();
     const [state,setState] = React.useState({
         energies : [],
         isLoading : true,
     });
     const {sendBilanMessage} = useSocket();
     const values = {};
-    const {energies} = state;
+    const {energies:customEnergies} = state;
+    const energies = Array.isArray(customEnergies)? customEnergies : [];
     const metersByTypes = {};
     energies.map((e)=>{
         if(!isObj(e) || !isNonNullString(e.device) || !isObj(e.payload) || !isObj(e.payload.value)) return;
@@ -84,8 +81,8 @@ export default function EnergySumaryLayout({...props}){
             }),
             new Promise((resolve,reject)=>{
                 sendBilanMessage({
-                    dateStart : startPeriodRef.current,
-                    dateEnd : endPeriodRef.current,
+                    dateStart : startDateRef.current,
+                    dateEnd : endDateRef.current,
                 }).then(({payload:{value}})=>{
                     resolve({energies:Array.isArray(value)? value : []})
                 }).catch((e)=>{
@@ -102,41 +99,8 @@ export default function EnergySumaryLayout({...props}){
     React.useEffect(()=>{
         setTimeout(refreshBilan,1000);
     },[]);
-    const setDates = ()=>{
-        DialogProvider.open({
-            title :"Période d'exécution de la requête",
-            subtitle : false,
-            fields : {
-                startPeriod : {
-                    type : "datetime",
-                    defaultValue : startPeriodRef.current,
-                    label : 'Période de début',
-                },
-                endPeriod : {
-                    type : "datetime",
-                    defaultValue : endPeriodRef.current,
-                    label : 'Période de fin'
-                }
-            },
-            actions : [
-                {
-                    text : 'Actualiser',
-                    icon : "refresh",
-                }
-            ],
-            onSuccess : ({data})=>{
-                if(data.startPeriod){
-                    startPeriodRef.current = new Date(data.startPeriod);
-                }
-                if(data.endPeriod){
-                    endPeriodRef.current = new Date(data.endPeriod);
-                }
-                DialogProvider.close(null,dialogRef);
-                refreshBilan();
-            }
-        },dialogRef)
-    }
-    const periodeTitle = (startPeriodRef.current.toFormat()+" => "+endPeriodRef.current.toFormat());
+    
+    
     const testID = "RN_EnergySumarryScreen";
     return <View style={[theme.styles.w100,theme.styles.ph1]} testID={testID}>
         <View>
@@ -155,10 +119,23 @@ export default function EnergySumaryLayout({...props}){
             <Cell tabletSize={12} desktopSize={8} phoneSize={12}>
                 <Surface>
                     <LoadCurveScreen
+                        editActionProps={{
+                            text : "Modifier la période"
+                        }}
+                        refreshActionProps={{
+                            text : "Actualiser"
+                        }}
                         withScreen = {false}
                         meter = {meterRef.current}
-                        startDate = {startPeriodRef.current}
-                        endDate = {endPeriodRef.current}
+                        startDate = {startDateRef.current}
+                        endDate = {endDateRef.current}
+                        withPeriodSelector = {true}
+                        onRefreshPeriod = {({startDate,endDate})=>{
+                            startDateRef.current = startDate;
+                            endDateRef.current = endDate;
+                            refreshBilan();
+                            return false;
+                        }}
                     />
                 </Surface>
             </Cell>
@@ -196,26 +173,6 @@ export default function EnergySumaryLayout({...props}){
                 </Surface>
             </Cell>
         </Grid>
-        <Fab
-            icon = "calendar"
-            visible
-            actions ={[
-                {
-                    text : "Actualiser",
-                    icon : "refresh",
-                    error  : true,
-                    onPress : refreshBilan,
-                    title : "Bilan énergetique sur la période : "+periodeTitle,
-                },
-                {
-                    text : "Modifier période",
-                    icon : "calendar",
-                    onPress : setDates,
-                    secondary : true,
-                }
-            ]}
-        />
-        <DialogProvider ref={dialogRef}/>
     </View>;
 }
 const styles = StyleSheet.create({

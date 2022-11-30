@@ -1,4 +1,4 @@
-import {isObj,isNonNullString,defaultVal,isArray} from "$utils";
+import {isObj,isNonNullString,defaultVal,uniqid,isArray} from "$utils";
 import { useSocket } from "$socket";
 import DateLib from "$lib/date";
 import Preloader from "$preloader";
@@ -6,10 +6,7 @@ import notify from "$notify";
 import DateTime from "$ecomponents/Date/DateTime";
 import Provider from "$ecomponents/Dialog/Provider";
 import Auth from "$cauth";
-import Icon from "$ecomponents/Icon";
 import View from "$ecomponents/View";
-import i18n from "$i18n";
-import TextField from "$ecomponents/TextField";
 import Label from "$ecomponents/Label";
 import Screen from "$screen";
 import { LOAD_CURVE  as screenName} from "../routes";
@@ -18,6 +15,7 @@ import theme from "$theme";
 import Chart from "$chart";
 import React from "$react";
 import { DEFAULT_START_PERIOD,DEFAULT_END_PERIOD } from "$socket/utils";
+import PeriodSelector from "./PeriodSelector";
 
 const CHART_DATE_SESSION_FORMAT = "CHART_DATE_SESSION";
 
@@ -48,7 +46,6 @@ export const isValidLoadCurveData = (value)=>{
 }
 
 const defaultDisplayFormat = "dd/mm/yyyy HH:MM";
-const defaultParsedFormat = "JJ/MM/YYYY HH:MM";
 
 export const getDateComponent = ({onChange,label,defaultValue,...props},ref)=>{
     return <DateTime
@@ -67,7 +64,7 @@ export const getDateComponent = ({onChange,label,defaultValue,...props},ref)=>{
     />
 }
 const LoadCurveScreen = React.forwardRef((p,ref)=>{
-    let {meter,testID,withScreen,startDate:startDatePeriod,endDate:endDatePeriod,...props} = getScreenProps(p);
+    let {meter,testID,withPeriodSelector,periodSelectorProps,editActionProps,refreshActionProps,withScreen,onRefreshPeriod,startDate:startDatePeriod,endDate:endDatePeriod,...props} = getScreenProps(p);
     const [state,setState] = React.useState({
         loadCurve : null,
         hasError : false,
@@ -76,10 +73,12 @@ const LoadCurveScreen = React.forwardRef((p,ref)=>{
     });
     startDatePeriod = defaultVal(startDatePeriod,defaultStartPeriod);
     endDatePeriod = defaultVal(endDatePeriod,defaultEndPeriod);
-    const dateStartRef = React.useRef(startDatePeriod);
-    const dateEndRef = React.useRef(endDatePeriod);
+    const startDateRef = React.useRef(startDatePeriod);
+    const endDateRef = React.useRef(endDatePeriod);
     testID = defaultStr(testID,"RN_LoadCurveScreen");
     meter = defaultObj(meter);
+    meter.name = defaultStr(meter.name);
+    const prevMeterName = React.usePrevious(meter.name);
     const chartDateFormatRef = React.useRef(defaultStr(Auth.getSessionData(CHART_DATE_SESSION_FORMAT),defaultDisplayFormat))
     const prevMeter = React.usePrevious(meter);
     const isValidMeter = isNonNullString(meter.name) && meter.gaId ? true : false;
@@ -90,13 +89,14 @@ const LoadCurveScreen = React.forwardRef((p,ref)=>{
         deviceName : name,
         logicalNames : getLogicalNames(),
     };
-    const hasDate = dateStartRef.current || dateEndRef.current? true : false;
-    const startDateStr = DateLib.isValid(dateStartRef.current)?dateStartRef.current.toFormat(LOAD_CURVE_DATA_LENGTH):undefined,
-          endDateStr = DateLib.isValid(dateEndRef.current)? dateEndRef.current.toFormat(LOAD_CURVE_DATA_LENGTH):undefined;
-  
+    periodSelectorProps = defaultObj(periodSelectorProps);
+    const hasDate = startDateRef.current || endDateRef.current? true : false;
+    const startDateStr = DateLib.isValid(startDateRef.current)?startDateRef.current.toFormat(LOAD_CURVE_DATA_LENGTH):startDateRef.current,
+          endDateStr = DateLib.isValid(endDateRef.current)? endDateRef.current.toFormat(LOAD_CURVE_DATA_LENGTH):endDateRef.current;
+
     const refresh = ()=>{
         if(!isValidMeter) return;
-        const op = {...opts, dateStart : dateStartRef.current,dateEnd : dateEndRef.current};
+        const op = {...opts, dateStart : startDateRef.current,dateEnd : endDateRef.current};
         if(op.dateStart && !op.dateEnd || (op.dateEnd && !op.dateStart)){
             notify.error("Vous devez spéficier à la fois la péroide de début et de fin");
             return null;
@@ -109,7 +109,6 @@ const LoadCurveScreen = React.forwardRef((p,ref)=>{
             }
             setState({...state,isInitialized:true,hasLoad:true,hasError,loadCurve:!hasError?payload : state.loadCurve});
         }).catch((e)=>{
-            console.log(e," is notifyffff")
             notify.error(e);
         }).finally(()=>{
             Preloader.close();
@@ -150,14 +149,26 @@ const LoadCurveScreen = React.forwardRef((p,ref)=>{
             options = {{
                 xaxis : {
                     categories : xaxis,
+                },
+                toolbar : {
+                    tools : {
+                        customIcons: [{
+                            html: '<i class="fa fa-angle-down"></i>',
+                            onClick: (e)=>{
+                                console.log("presseddddddd ",e)
+                            },
+                            appendTo: 'left' // left / top means the button will be appended to the left most or right most position
+                        }]
+                    }
                 }
             }}
         />
     }
     React.useEffect(()=>{
-        if((meter.name === prevMeter.name && (startDatePeriod == dateStartRef.current) && (endDatePeriod == dateEndRef.current))) return;
-        dateStartRef.current = startDatePeriod;
-        dateEndRef.current = endDatePeriod;
+        if((startDatePeriod == defaultStartPeriod || endDatePeriod == defaultEndPeriod) && (!prevMeterName || prevMeterName == meter.name)) return;
+        if((meter.name === prevMeter.name && (startDatePeriod == startDateRef.current) && (endDatePeriod == endDateRef.current))) return;
+        startDateRef.current = startDatePeriod;
+        endDateRef.current = endDatePeriod;
         refresh();
     },[meter,startDatePeriod,endDatePeriod])
     React.useEffect(()=>{
@@ -183,13 +194,13 @@ const LoadCurveScreen = React.forwardRef((p,ref)=>{
             <Label>Courbe des charge associée au compteur {" ["}</Label>
             <Label textBold>{name}] {" "}</Label>
             {hasDate ? <>
-                {startDateStr && dateEndRef.current ? <><Label>
+                {startDateStr && endDateRef.current ? <><Label>
                     pour la période allant du </Label><Label textBold>{startDateStr+" "}au{" "+endDateStr}</Label>
                 </>:null}  
-                {startDateStr && !dateEndRef.current ? <>
+                {startDateStr && !endDateRef.current ? <>
                     <Label>Depuis le</Label> <Label textBold>{" "+startDateStr}</Label>
                 </>:<Label></Label>}
-                {!startDateStr && dateEndRef.current ? <>
+                {!startDateStr && endDateRef.current ? <>
                     <Label>jusqu'au </Label><Label textBold> {" "+endDateStr} </Label>
                 </>:<Label></Label>}
             </>:null}
@@ -197,9 +208,33 @@ const LoadCurveScreen = React.forwardRef((p,ref)=>{
         <View>
             {content}
         </View>
+        {withPeriodSelector !== false ? <PeriodSelector
+            editActionProps={{
+                text : "Modifier la période {0}".sprintf(meter.name && ("["+meter.name+"]") || ''),
+                ...defaultObj(editActionProps)
+            }}
+            refreshActionProps={{
+                text : "Actualiser {0}".sprintf(meter.name && ("["+meter.name+"]") || ''),
+                ...defaultObj(refreshActionProps)
+            }}
+            {...periodSelectorProps}
+            startDate = {startDateRef.current}
+            endDate = {endDateRef.current}
+            onRefresh={(args)=>{
+                if(typeof onRefreshPeriod =='function' && onRefreshPeriod(args) === false){
+                    return;
+                } else if(typeof periodSelectorProps.onRefresh =='function' && periodSelectorProps.onRefresh(args) ===false) return;
+                const {startDate,endDate} = args;
+                startDateRef.current = startDate;
+                endDateRef.current = endDate;
+                refresh();
+            }}
+        /> : null}
     </Wrapper>
 });
 LoadCurveScreen.displayName = "LoadCurveScreen";
 LoadCurveScreen.screenName = screenName;
 
 export default LoadCurveScreen;
+
+LoadCurveScreen.PeriodSelector = PeriodSelector;

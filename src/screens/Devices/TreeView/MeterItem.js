@@ -48,7 +48,7 @@ export default function MeterItemContainer (props){
     },[]);
     const d = useDrawer();
     const color = state.online?theme.colors.success:theme.colors.error;
-    return <Link routeName={LOAD_CURVE} routeParams={{meter}}
+    return <Link routeName={LOAD_CURVE} timeout = {500} routeParams={{meter}}
         Component = {Button}
         title={state.online?"":"Le compteur "+meter.meterName+" est hors ligne"} style={{color:color,marginLeft:5}} 
         onPress={(e)=>{
