@@ -18,7 +18,7 @@ export default {
     },
     Image : function(){
         return <Image
-            size = {60}
+            size = {80}
             src = {logo}
             containerProps = {{style:{margin:0,padding:0}}}
         />
