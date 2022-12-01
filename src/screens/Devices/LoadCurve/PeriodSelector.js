@@ -48,7 +48,7 @@ export default function LoadCurvePeriodSelectorComponent({onRefresh,refreshActio
                     ...refreshActionProps,
                     text : defaultStr(refreshActionProps.text,"Actualiser"),
                     icon : defaultStr(refreshActionProps.icon,"material-refresh"),
-                    onPress : onRefresh,
+                    onPress : refresh,
                     title : periodeTitle,
                 },
                 {

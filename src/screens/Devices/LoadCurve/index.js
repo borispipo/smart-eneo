@@ -131,7 +131,6 @@ const LoadCurveScreen = React.forwardRef((p,ref)=>{
                 date = new Date(v[0]);
                 if(!date) continue;
                 const d = DateLib.format(date,chartDateFormatRef.current);
-                ///console.log(d," is dheinn")
                 if(!d) continue;
                 xaxis.push(d);////on prend la période de données
                 series.map((s)=>{
