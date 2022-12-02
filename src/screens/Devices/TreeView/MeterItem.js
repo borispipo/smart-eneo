@@ -9,8 +9,6 @@ import { LOAD_CURVE } from "../routes";
 import { iconSize,meterIcon } from "./utils";
 import {useDrawer} from "$ecomponents/Drawer";
 import theme from "$theme";
-import {isObj} from "$utils";
-import { getBackgroundColor } from "$ecomponents/Drawer/DrawerItems/utils";
 
 export default function MeterItemContainer (props){
     const {meter} = props;
@@ -19,7 +17,7 @@ export default function MeterItemContainer (props){
     });
     const {name,gaId} = meter;
     const buttonRef = React.useRef(null);
-    const {sendPingMessage,getLogicalNames,sendGetAllDataRegisterMessage} = useSocket();
+    const {sendPingMessage,getLogicalNames} = useSocket();
     
     const opts = {
         gaId,
@@ -39,16 +37,10 @@ export default function MeterItemContainer (props){
     
     React.useEffect(()=>{
         checkPing();
-        sendGetAllDataRegisterMessage({
-            ...opts,
-            logicalNames : getLogicalNames(meter,(info)=>info.code != 'GENERIC_PROFILE')
-        }).then(data=>{
-            console.log(data," is get send message ddddd form meter ",meter);
-        })
     },[]);
     const d = useDrawer();
     const color = state.online?theme.colors.success:theme.colors.error;
-    return <Link routeName={LOAD_CURVE} timeout = {500} routeParams={{meter}}
+    return <Link routeName={LOAD_CURVE}  timeout = {500} routeParams={{meter,withMeterObjects:true}}
         Component = {Button}
         title={state.online?"":"Le compteur "+meter.meterName+" est hors ligne"} style={{color:color,marginLeft:5}} 
         onPress={(e)=>{

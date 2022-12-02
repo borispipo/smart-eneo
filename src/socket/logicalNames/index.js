@@ -1,5 +1,16 @@
 import * as LOGICAL_NAMES from "./logicalNames";
 
+/**** le mappage entre les noms des logicals names et des code
+ * les clés sont les codes et les valeurs sont les nom
+ */
+export const LOGICAL_NAMES_MAPPING ={};
+
+for(let i in LOGICAL_NAMES){
+    if(typeof LOGICAL_NAMES[i] =='object' && LOGICAL_NAMES[i] && LOGICAL_NAMES[i].code){
+        LOGICAL_NAMES_MAPPING[LOGICAL_NAMES[i].code] = i;
+    }
+}
+
 export * from "./logicalNames";
 
 export default LOGICAL_NAMES;
@@ -18,6 +29,9 @@ export const getLogicalName  = (logicalName,key)=>{
         logicalName = logicalName.name;
     }
     logicalName = defaultStr(logicalName).toUpperCase().trim();
+    if(LOGICAL_NAMES_MAPPING[logicalName]){
+        logicalName = LOGICAL_NAMES_MAPPING[logicalName];
+    }
     if(!logicalName || !isObj(LOGICAL_NAMES[logicalName])) return undefined;
     const l = LOGICAL_NAMES[logicalName];
     return l[defaultStr(key,'code')] || undefined;
