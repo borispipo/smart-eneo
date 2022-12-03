@@ -34,6 +34,7 @@ export const getLogicalName  = (logicalName,key)=>{
     }
     if(!logicalName || !isObj(LOGICAL_NAMES[logicalName])) return undefined;
     const l = LOGICAL_NAMES[logicalName];
+    if(key===true) return l;
     return l[defaultStr(key,'code')] || undefined;
 }
 

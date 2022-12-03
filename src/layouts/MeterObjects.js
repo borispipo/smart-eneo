@@ -4,11 +4,13 @@
 import {isObj,isNonNullString,defaultVal,uniqid,isArray} from "$utils";
 import { useSocket } from "$socket";
 import notify from "$notify";
-import Grid from "$components/Grid";
+import Grid,{Cell} from "$components/Grid";
 import View from "$ecomponents/View";
 import ActivityIndicator from "$components/ActivityIndicator";
 import theme from "$theme";
 import React from "$react";
+import {getLogicalName} from '$socket/logicalNames';
+import Label from '$components/Label';
 export default function MeterObjects({meter,testID,...props}){
     meter = defaultObj(meter);
     meter.name = defaultStr(meter.name);
@@ -47,6 +49,21 @@ export default function MeterObjects({meter,testID,...props}){
         <View style={[theme.styles.w100,theme.styles.row,theme.styles.disabled]}>
             {isLoading && <ActivityIndicator/> || null}
 
+
         </View>
+        <Grid style={theme.styles.w100}>
+            {(Array.isArray(objects)?objects:[]).map((el)=>{
+                console.log(".............",el);
+                if(!el || el.logicalName) return null;
+                const o = getLogicalName(el.logicalName,true);
+                if(!o) return null;
+                return <Cell key={el.logicalName} tabletSize ={4} desktopSize ={2} phoneSize = {6}>
+                        <Label >
+                            {el.description}
+                        </Label>
+                    </Cell>
+            })}
+        </Grid >
+
     </View>
 }
