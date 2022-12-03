@@ -11,6 +11,7 @@ import DateTime from "$ecomponents/Date/DateTime";
 import Auth from "$cauth";
 import View from "$ecomponents/View";
 import Label from "$ecomponents/Label";
+import Button from "$ecomponents/Button";
 import theme from "$theme";
 import Chart from "$chart";
 import React from "$react";
@@ -189,6 +190,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
                 {!startDateStr && endDateRef.current ? <>
                     <Label>jusqu'au </Label><Label textBold> {" "+endDateStr} </Label>
                 </>:<Label></Label>}
+                <Button text="Download" onClick={()=>console.log("ça marche")}/>
             </>:null}
         </View> : null}
         <View>
