@@ -4,9 +4,9 @@
 
 import Label from "$ecomponents/Label";
 import View from "$ecomponents/View";
-import theme from "$theme";
-import Avatar from "$ecomponents/Avatar";
 import Image from "$components/Image";
+import logo from "$assets/logo.png";
+
 export default {
     Text : function({styles,style,testID,...rest}){
         return <View testID={testID} style={style}>
@@ -17,12 +17,10 @@ export default {
         </View> 
     },
     Image : function(){
-        return <Avatar
-            size = {50}
-            icon = "lightning-bolt"
-            style = {{margin:0,padding:0}}
+        return <Image
+            size = {80}
+            src = {logo}
             containerProps = {{style:{margin:0,padding:0}}}
-            color = {theme.colors.primary}
         />
     }
 }

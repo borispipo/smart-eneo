@@ -15,15 +15,12 @@ import DateComponent from "$ecomponents/Date";
 import Button from "$ecomponents/Button";
 import notify from "$notify";
 import { StyleSheet } from "react-native";
-import Icon from "$ecomponents/Icon";
 import Label from "$ecomponents/Label";
-import {isDesktopMedia} from "$dimensions";
-import Time from "$ecomponents/Date/Time";
 import Surface from "$components/Surface";
 import Divider from "$components/Divider";
-import { iconSize,meterIcon } from "$screens/Devices/TreeView/utils";
+import { meterIcon } from "$screens/Devices/TreeView/utils";
 import { ScrollView } from "react-native";
-import LoadCurveScreen from "$screens/Devices/LoadCurve";
+import LoadCurve from "./LoadCurve";
 import { getMetersListFromType } from "$database/data/devices";
 
 export default function EnergySumaryLayout({...props}){
@@ -118,14 +115,13 @@ export default function EnergySumaryLayout({...props}){
         <Grid>
             <Cell tabletSize={12} desktopSize={8} phoneSize={12}>
                 <Surface>
-                    <LoadCurveScreen
+                    <LoadCurve
                         editActionProps={{
                             text : "Modifier la période"
                         }}
                         refreshActionProps={{
                             text : "Actualiser"
                         }}
-                        withScreen = {false}
                         meter = {meterRef.current}
                         startDate = {startDateRef.current}
                         endDate = {endDateRef.current}
