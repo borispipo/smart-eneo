@@ -1,67 +1,81 @@
 // Copyright 2022 @fto-consult/Boris Fouomene. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-import {isObj,isNonNullString,defaultVal,uniqid,isArray} from "$utils";
+import { isObj, isNonNullString, defaultVal, uniqid, isArray } from "$utils";
 import { useSocket } from "$socket";
 import notify from "$notify";
-import Grid,{Cell} from "$components/Grid";
+import Grid, { Cell } from "$components/Grid";
 import View from "$ecomponents/View";
 import ActivityIndicator from "$components/ActivityIndicator";
 import theme from "$theme";
 import React from "$react";
-import {getLogicalName} from '$socket/logicalNames';
+import { getLogicalName } from '$socket/logicalNames';
 import Label from '$components/Label';
-export default function MeterObjects({meter,testID,...props}){
+import Surface from "$components/Surface";
+export default function MeterObjects({ meter, testID, ...props }) {
     meter = defaultObj(meter);
     meter.name = defaultStr(meter.name);
-    const [state,setState] = React.useState({
-        objects : null,
-        isLoading : true,
+    const [state, setState] = React.useState({
+        objects: null,
+        isLoading: true,
     });
-    testID = defaultStr(testID,"RN_MeterObject"+meter.name);
-    const {name,gaId} = meter;
-    const {getLogicalNames,sendGetAllDataRegisterMessage} = useSocket();
+    testID = defaultStr(testID, "RN_MeterObject" + meter.name);
+    const { name, gaId } = meter;
+    const { getLogicalNames, sendGetAllDataRegisterMessage } = useSocket();
     const opts = {
         gaId,
-        deviceName : name,
-        logicalNames : getLogicalNames(),
+        deviceName: name,
+        logicalNames: getLogicalNames(),
     };
-    const {isLoading,objects} = state;
+    const { isLoading, objects } = state;
     const isValidMeter = (meter.name) && meter.gaId ? true : false;
-    const refresh = ()=>{
-        if(!isValidMeter) return Promise.reject();
-        setState({...state,isLoading:true});
+    const refresh = () => {
+        if (!isValidMeter) return Promise.reject();
+        setState({ ...state, isLoading: true });
         return sendGetAllDataRegisterMessage({
             ...opts,
-            logicalNames : getLogicalNames(meter,(info)=>info.code != 'GENERIC_PROFILE')
-        }).then((args)=>{
-            const objects = isObj(args) && isObj(args.payload) && Array.isArray(args.payload.value) && args.payload.value|| [];
-            setState({...state,objects,isLoading: false})
-        }).catch(()=>{
-            setState({...state,isLoading: false})
+            logicalNames: getLogicalNames(meter, (info) => info.code != 'GENERIC_PROFILE')
+        }).then((args) => {
+            const objects = isObj(args) && isObj(args.payload) && Array.isArray(args.payload.value) && args.payload.value || [];
+            setState({ ...state, objects, isLoading: false })
+        }).catch(() => {
+            setState({ ...state, isLoading: false })
         });
     }
-    React.useEffect(()=>{
+    React.useEffect(() => {
         refresh();
-    },[]);
-    console.log(objects," is objects or meter ",meter);
-    return <View testID={testID+"_Container"} pointerEvents={isLoading?"none":"auto"} style={[theme.styles.w100]}>
-        <View style={[theme.styles.w100,theme.styles.row,theme.styles.disabled]}>
-            {isLoading && <ActivityIndicator/> || null}
+    }, []);
+    console.log(objects, " is objects or meter ", meter);
+    return <View testID={testID + "_Container"} pointerEvents={isLoading ? "none" : "auto"} style={[theme.styles.w100, theme.styles.ph1]}>
+        <View style={[theme.styles.w100, theme.styles.row, theme.styles.disabled]}>
+            {isLoading && <ActivityIndicator /> || null}
 
 
         </View>
         <Grid style={theme.styles.w100}>
-            {(Array.isArray(objects)?objects:[]).map((el)=>{
-                console.log(".............",el);
-                if(!el || el.logicalName) return null;
-                const o = getLogicalName(el.logicalName,true);
-                if(!o) return null;
-                return <Cell key={el.logicalName} tabletSize ={4} desktopSize ={2} phoneSize = {6}>
-                        <Label >
-                            {el.description}
-                        </Label>
-                    </Cell>
+            {(Array.isArray(objects) ? objects : []).map((el) => {
+
+                if (!el || !el.logicalName) return null;
+                const o = getLogicalName(el.logicalName, true);
+                if (!o || !o.isOject) return null;
+                const value = parseFloat(el.value?.value||el.value)||0
+                return <Cell key={el.logicalName} tabletSize={4} desktopSize={2} phoneSize={6}>
+                    <Surface style={[theme.styles.row, theme.styles.w100, theme.styles.justifyContentSpaceBetween, theme.styles.p1, {borderRadius:10}]} elevation={5} >
+                        <View  >
+
+                            <Label style={[theme.styles.w100 ]}>
+                                {o.shortDesc}
+                            </Label>
+                            <Label style={[theme.styles.w100,theme.styles.fs16 ]} textBold>
+                                {value.formatNumber()}
+                            </Label>
+                        </View>
+                        <View  >
+
+                        </View>
+                    </Surface>
+                   
+                </Cell>
             })}
         </Grid >
 
