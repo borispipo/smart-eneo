@@ -12,6 +12,10 @@ import Auth from "$cauth";
 import View from "$ecomponents/View";
 import Label from "$ecomponents/Label";
 import Button from "$ecomponents/Button";
+import Icon,{MENU_ICON} from "$ecomponents/Icon";
+import fetch from "$capi";
+
+import Menu from "$ecomponents/Menu";
 import theme from "$theme";
 import Chart from "$chart";
 import React from "$react";
@@ -107,6 +111,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
             if(hasError){
                 notify.error(error);
             }
+            console.log("payload............;;;",payload);
             setState({...state,isInitialized:true,hasLoad:true,hasError,loadCurve:!hasError?payload : state.loadCurve});
         }).catch((e)=>{
             notify.error(e);
@@ -117,6 +122,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
     
     let content = null;
     const {loadCurve} = state;
+    let sheetName = loadCurve?.sheetName
     if(isValidLoadCurve(loadCurve)){
         const {periodEnd : endDate, periodStart:startDate,value} = loadCurve;
         const xaxis = [], series = [];
@@ -190,8 +196,24 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
                 {!startDateStr && endDateRef.current ? <>
                     <Label>jusqu'au </Label><Label textBold> {" "+endDateStr} </Label>
                 </>:<Label></Label>}
-                <Button text="Download" onClick={()=>console.log("ça marche")}/>
+               
+                
+
+               
             </>:null}
+            <Menu  anchor = {
+                    (props)=> <Icon icon = {MENU_ICON} {...props} /> 
+                } items ={[
+                   sheetName && {
+                        text:"Download",
+                        icon: "download",
+                        onPress :()=>{
+                            fetch("sheet/"+sheetName).then((r)=>{
+                                console.log(r);
+                            })
+                        }   
+                    }
+                ]}/>
         </View> : null}
         <View>
             {content}
