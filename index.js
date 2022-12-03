@@ -9,3 +9,4 @@ registerApp({config,App:({children,APP})=>{
     APP.on(APP.EVENTS.AUTH_LOGIN_USER,onLoginUser);
     return <SocketProvider>{children}</SocketProvider>;
 }});
+/*      ............*/
