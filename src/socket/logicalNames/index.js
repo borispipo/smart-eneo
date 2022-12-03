@@ -1,4 +1,5 @@
 import * as LOGICAL_NAMES from "./logicalNames";
+import {isNonNullString} from "$utils";
 
 /**** le mappage entre les noms des logicals names et des code
  * les clés sont les codes et les valeurs sont les nom
@@ -19,21 +20,26 @@ export {default as LOGICAL_NAMES_VALUES_TYPES} from "./types";
 
 export {default as LOGICAL_NAMES_VALUES_UNITS} from "./units";
 
+export const getLogicalNameObject = (logicalName)=>{
+    if(isObj(logicalName) && isNonNullString(logicalName.name)){
+        logicalName = logicalName.name;
+    }
+    if(!isNonNullString(logicalName)) return null;
+    logicalName = defaultStr(logicalName).toUpperCase().trim();
+    if(LOGICAL_NAMES_MAPPING[logicalName]){
+        logicalName = LOGICAL_NAMES_MAPPING[logicalName];
+    }
+    return LOGICAL_NAMES[logicalName] || null;
+}
+
 /*** retourne le logical name passé en paramètre 
  * @param logicalName {string|object}, le nom du logicalName ou l'un des objets pris dans LOGICAL_NAMES
  * @param key {string},default 'code', la clé dont on veut récupérer la valeur dans la liste des logicalName
  * @reaturn {any}, la valeur trouvé dans l'objet LOGICIAL_NAME correspondant à l'une des logical name de LOGICAL_NAMES
 */
 export const getLogicalName  = (logicalName,key)=>{
-    if(isObj(logicalName) && isNonNullString(logicalName.name)){
-        logicalName = logicalName.name;
-    }
-    logicalName = defaultStr(logicalName).toUpperCase().trim();
-    if(LOGICAL_NAMES_MAPPING[logicalName]){
-        logicalName = LOGICAL_NAMES_MAPPING[logicalName];
-    }
-    if(!logicalName || !isObj(LOGICAL_NAMES[logicalName])) return undefined;
-    const l = LOGICAL_NAMES[logicalName];
+    const l = getLogicalNameObject(logicalName);
+    if(!l) return undefined;
     if(key===true) return l;
     return l[defaultStr(key,'code')] || undefined;
 }
