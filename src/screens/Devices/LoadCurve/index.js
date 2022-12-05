@@ -15,6 +15,7 @@ export default function LoadCurveScreen(p){
     const ref = React.useRef(null);
 
     return <Screen
+        withScrollView
         {...props}
         title = {"Courbe des charges "+(isNonNullString(meter.name) ?(" ["+meter.name+"]"):"")}
         appBarProps = {{

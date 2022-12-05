@@ -209,7 +209,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
                         icon: "download",
                         onPress :()=>{
                             fetch("sheet/"+sheetName).then((r)=>{
-                                console.log(r);
+                                console.log(r," is result data");
                             })
                         }   
                     }
