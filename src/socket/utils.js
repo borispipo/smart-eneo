@@ -1,5 +1,5 @@
 
-import {isValidUrl,defaultStr,isNonNullString,uniqid,defaultVal,defaultDecimal,removeQueryString,setQueryParams} from "$utils";
+import {isValidUrl,defaultStr,isPromise,isNonNullString,isBlob,uniqid,defaultVal,defaultDecimal,removeQueryString,setQueryParams} from "$utils";
 import {isJSON,parseJSON} from "$utils/json";
 import {getToken,getLoggedUserId} from "$cauth/utils";
 import DateLib from "$date";
@@ -9,8 +9,15 @@ import { io} from "./client";
 import APP from "$app/instance";
 import {timeout} from "$capi";
 import {canCheckOnline} from "$api";
+import settings from "./settings";
+import fetch from "$capi/fetch";
+import Preloader from "$preloader";
+import FileSystem from "$efile-system";
 
 import Auth from "$cauth";
+
+export * from "./session";
+export {settings};
 
 export * from "./logicalNames";
 
@@ -25,8 +32,6 @@ const SOCKET_URL = defaultStr(process.env.SOCKET_HOST).trim("/").rtrim("/");
 export const AUTHENTICATION_ERROR = "authentication error";
 
 export const USER_ALREADY_CONNECTED = "this user is already connected";
-
-export const BACKEND_MODE = "BA";
 
 export const DEFAULT_START_PERIOD = DateLib.parse("10/01/2017 00:00:00",DateLib.defaultDateTimeFormat);
 export const DEFAULT_END_PERIOD = DateLib.parse("16/01/2017 00:00:00",DateLib.defaultDateTimeFormat);
@@ -157,7 +162,10 @@ export const getSendMessageOptions = (opts) =>{
         options.payload.logicalName = logicalName;
     }
     /*** par défaut les données sont recherchés en backend */
-    options.payload.mode = defaultStr(options.payload.mode,options.mode,BACKEND_MODE);
+    options.payload.mode = defaultStr(options.payload.mode,options.mode,settings.mode);
+    if(!options.payload.mode){
+        delete options.payload.mode;
+    }
     return options;
 }
 /**** envoie un message via le webSocket 
@@ -323,3 +331,46 @@ export const getReadyStateMessage = (readyState)=>{
     }
     return typeof readyState =='number' && READY_STATES[readyState] || undefined;
 }
+
+
+/*** télécharge la courve des charges dont le nom de la feuille est passé en paramètre depuis le serveur 
+ * @param {string} sheetName le nom de la feuille excel associée à la courbe des charges à télécharger
+ * @param {object} fetchOptions les options supplémentaires à passer à la fonction fetch téléchargeant la courbe des charges
+ * @return {Promise} resolue lorsque la courbe des charges est téléchargée
+*/
+export const downloadLoadCurve = (sheetName,fetchOptions)=>{
+    if(!isNonNullString(sheetName)){
+        return Promise.reject({message:'Nom de la fuille excel associée à la courbe des charges mal définie. Veuillez spécifier un nom valide'});
+    }
+    let {fileName,...rest} = defaultObj(fetchOptions)
+    fileName = defaultStr(fileName,sheetName);
+    return new Promise((resolve,reject)=>{
+        Preloader.open("téléchargement de la courbe des charges [{0}]...".sprintf(sheetName));
+        fetch("sheet/{0}".sprintf(sheetName),rest).then((res)=>{
+            return res.blob().then((blob)=>{
+                if(!isBlob(blob)){
+                    Preloader.close();
+                    return reject({...rest,message:'Type de données blob invalide associé à la courbe des charges'});
+                }
+                FileSystem.writeExcel({content:blob,fileName}).then(resolve);
+                Preloader.close();
+            })
+        }).catch((e)=>{
+            reject(e);
+            Preloader.close();
+        })
+    })
+}
+
+function downloadFile(blob, name = "file.pdf") {
+    const href = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement("a"), {
+      href,
+      style: "display:none",
+      download: name,
+    });
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(href);
+    a.remove();
+  }

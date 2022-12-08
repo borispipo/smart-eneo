@@ -9,6 +9,7 @@ import PropTypes from "prop-types";
 import {defaultStr} from "$utils";
 import DateLib from "$lib/date";
 import notify from "$notify";
+import {settings} from "$socket/utils";
 
 export default function LoadCurvePeriodSelectorComponent({onRefresh,refreshActionProps,editActionProps,testID,startDate,endDate,onUpdatePeriod,...props}){
     const dialogRef = React.useRef(null);
@@ -36,6 +37,8 @@ export default function LoadCurvePeriodSelectorComponent({onRefresh,refreshActio
         startDateRef.current = startDate;;
         endDateRef.current = endDate;
     },[startDate,endDate])
+    const isBAMode = settings.isBAMode;
+    const BAText = isBAMode?"non connecté [BA]":"connecté";
     return <>
         <Fab
             {...props}
@@ -44,11 +47,22 @@ export default function LoadCurvePeriodSelectorComponent({onRefresh,refreshActio
             testID = {testID}
             actions ={[
                 {
+                    icon :  isBAMode ? "thermometer-off" : "thermometer",
+                    text : "Mode {0}".sprintf(BAText),
+                    title : 'Les requêtes s\'exécutent actuellement en mode {0}. Cliquez pour modifier le mode d\'exécution des requêtes'.sprintf(BAText),
+                    onPress : ()=>{
+                        settings.toggleBAMode();
+                        return refresh();
+                    },
+                },
+                {
                     error  : true,
                     ...refreshActionProps,
                     text : defaultStr(refreshActionProps.text,"Actualiser"),
                     icon : defaultStr(refreshActionProps.icon,"material-refresh"),
-                    onPress : refresh,
+                    onPress : ()=>{
+                        settings.toggleBAMode();
+                    },
                     title : periodeTitle,
                 },
                 {

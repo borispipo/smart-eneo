@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import {isObj,isNonNullString,defaultVal,isArray} from "$utils";
+import {isObj,isNonNullString,sanitizeFileName,getFileName,defaultVal,isArray} from "$utils";
 import { useSocket } from "$socket";
 import DateLib from "$lib/date";
 import Preloader from "$preloader";
@@ -87,7 +87,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
     const prevMeter = React.usePrevious(meter);
     const isValidMeter = isNonNullString(meter.name) && meter.gaId ? true : false;
     const {name,gaId} = meter;
-    const {sendLoadCurveMessage,getLogicalNames} = useSocket();
+    const {sendLoadCurveMessage,downloadLoadCurve,getLogicalNames} = useSocket();
     const opts = {
         gaId,
         deviceName : name,
@@ -205,12 +205,12 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
                     (props)=> <Icon icon = {MENU_ICON} {...props} /> 
                 } items ={[
                    sheetName && {
-                        text:"Download",
+                        text:"Télécharger",
                         icon: "download",
                         onPress :()=>{
-                            fetch("sheet/"+sheetName).then((r)=>{
-                                console.log(r," is result data");
-                            })
+                            downloadLoadCurve(sheetName,{
+                                fileName : sanitizeFileName("{0} du {1} au {2}".sprintf(getFileName(sheetName,true),startDateStr,endDateStr))
+                            });
                         }   
                     }
                 ]}/>

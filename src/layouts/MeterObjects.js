@@ -45,12 +45,9 @@ export default function MeterObjects({ meter, testID, ...props }) {
     React.useEffect(() => {
         refresh();
     }, []);
-    console.log(objects, " is objects or meter ", meter);
     return <View testID={testID + "_Container"} pointerEvents={isLoading ? "none" : "auto"} style={[theme.styles.w100, theme.styles.ph1]}>
         <View style={[theme.styles.w100, theme.styles.row, theme.styles.disabled]}>
             {isLoading && <ActivityIndicator /> || null}
-
-
         </View>
         <Grid style={theme.styles.w100}>
             {(Array.isArray(objects) ? objects : []).map((el) => {
