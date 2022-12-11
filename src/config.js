@@ -25,7 +25,9 @@ const config = {
             primary  : "#00AB55",
             secondary : "#354448",
         }
-    }
+    },
+    /***NetInfo */
+    netInfoReachabilityShortTimeout : 30000,
 }
 
 module.exports = config;

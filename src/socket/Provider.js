@@ -8,6 +8,8 @@ import Queue from "$utils/queue";
 import PropTypes from "prop-types";
 import Auth from "$cauth";
 import {timeout} from "$capi/utils";
+import MessageBox from "./MessageBox";
+import notify from "$notify";
 
 const queue = new Queue();
 
@@ -23,6 +25,7 @@ export default function SocketProvider(props){
     const socketRef = React.useRef(null);
     const context = React.useRef({}).current;
     const callbackRef = React.useRef(null);
+    const messageBoxRef = React.useRef(null);
     const BINDED_ELTS = React.useRef({}).current;
     const hasSocket = context.hasSocket = x=> {
         if(!socketRef.current){
@@ -79,6 +82,10 @@ export default function SocketProvider(props){
         const sOptions = Object.assign({},options);
         return {
             ...sOptions,
+            onDisconnect : ()=>{
+                socketRef.current = null;
+                messageBoxRef.current?.setVisible(true);
+            },
             onOpen : (args)=>{
                 queue.stop=false;
                 if(typeof sOptions.onOpen ==='function'){
@@ -91,6 +98,8 @@ export default function SocketProvider(props){
                     callbackRef.current(args);
                 }
                 callbackRef.current = undefined;
+                messageBoxRef.current?.setVisible(false);
+                notify.success("Votre connection a été restaurée!!");
             },
             onClose : (args)=>{
                 queue.stop=true;
@@ -116,6 +125,7 @@ export default function SocketProvider(props){
         }
     },[options])
     const connect = ()=>{
+        console.log(hasSocket() || socketRef.current && socketRef.current.isConnected()," is try to connect");
         if(hasSocket() || socketRef.current && socketRef.current.isConnected()) return;
         socketRef.current = nCreateSocket(url,socketOptions);
         return socketRef.current;
@@ -153,11 +163,18 @@ export default function SocketProvider(props){
     }
     React.useEffect(()=>{       
         const onLoginUser = (u)=>{
-            connect(url,socketOptions);
+            connect();
         };
         const onLogoutUser = ()=>{
             disconnect();
         }
+        const onStateChange = ({isActive})=>{
+            if(isActive){
+                connect();
+            }
+        }
+        APP.on(APP.EVENTS.GO_ONLINE,onLoginUser);
+        APP.on(APP.EVENTS.STATE_CHANGE,onStateChange);
         APP.on(APP.EVENTS.SCREEN_FOCUS,onLoginUser);
         APP.on(APP.EVENTS.AUTH_LOGIN_USER,onLoginUser);
         APP.on(APP.EVENTS.AUTH_LOGOUT_USER,onLogoutUser);
@@ -166,11 +183,14 @@ export default function SocketProvider(props){
             APP.off(APP.EVENTS.AUTH_LOGIN_USER,onLoginUser);
             APP.off(APP.EVENTS.AUTH_LOGOUT_USER,onLogoutUser);
             APP.off(APP.EVENTS.SCREEN_FOCUS,onLoginUser);
+            APP.off(APP.EVENTS.STATE_CHANGE,onStateChange);
+            APP.off(APP.GO_ONLINE,onLoginUser);
         }
     },[])
     const value = {connect,toggleActivityMessage,disconnect,downloadLoadCurve,settings,...context,REQUEST_DATE_TIME_FORMAT,getLogicalName,getLogicalNames,sendPingMessage,sendMessage,sendLoadCurveMessage,sendBilanMessage,canSendMessage,context,bind,unbind,TYPES,LOGICAL_NAMES,getSocket,get:getSocket,sendGetAllDataRegisterMessage};
     return <SocketContext.Provider value={value}>
         {children}
+        <MessageBox ref={messageBoxRef}></MessageBox>
     </SocketContext.Provider>
 }
 
@@ -239,7 +259,7 @@ const SocketContainer = React.forwardRef((props,ref)=>{
     },[]);
     React.setRef(ref,{context});
     const c = typeof children =='function'? children({socket,context,...state}) : React.isComponent(Component) ? <Component {...state} /> : children;
-    return React.isValidElement(c)? c : null;
+    return React.isValidElement(c)? c : null
 });
 
 SocketContainer.displayName = "SocketContainerComponent";
