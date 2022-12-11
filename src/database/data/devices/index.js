@@ -360,3 +360,19 @@ export function getMetersListFromType (type,pouchdbOptions){
         });
     })
 }
+
+/**supprime tous les compteurs enregistrés en base de données 
+ * parcoure chaque base de données puis supprime lesdit compteurs
+*/
+
+export const removeAll = ()=>{
+    const promises = [];
+    ALL_METER_DATABASES.map((dbName)=>{
+        promises.push((getDB({dbName})).then(({db})=>{
+            return db.destroy();
+        }))
+    })
+    return Promise.all(promises)
+}
+
+export const destroyAll = removeAll;

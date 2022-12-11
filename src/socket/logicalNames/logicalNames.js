@@ -5,11 +5,12 @@ export const METER_NUMBER = {
     code : "0.0.96.1.0.255",
     desc: 'Numéro compteur',
     shortDesc : "N° compteur",
-    isOject : true,
+    isOject : false,
     displayInSettings : true,
     displayInHome : false, //si l'on pourra affichera à l'interface d'acceuil d'un compteur
     name : 'METER_NUMBER',
     type : TYPES.NUMBER,
+    jstType : "string",
     unit : UNITS.NONE,
 };
 

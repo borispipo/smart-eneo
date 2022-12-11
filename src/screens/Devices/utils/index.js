@@ -1,5 +1,5 @@
 import {fetchMetersList as fetchRemoteMeters } from "$api/devices";
-import {isValidMeter} from "$database/data/devices";
+import {isValidMeter,removeAll} from "$database/data/devices";
 import Preloader from "$preloader";
 import { upsertMeter} from "$database/data/devices";
 import notify from "$notify";
@@ -37,9 +37,7 @@ export function fetchMetersList(opts){
                 if(check){
                     Preloader.open({
                         title : "Récupération des compteurs",
-                        content : <View> 
-                             <Label textBold>GA {index.formatNumber()}{"/"}{count.formatNumber()}, {percent+" "} réalisé(s)... </Label>
-                        </View>,
+                        content : <Label textBold>GA {index.formatNumber()}{"/"}{count.formatNumber()}, {percent+" "} réalisé(s)... </Label>,
                     });
                 }
                 upsertMeter(meter).then(()=>{
@@ -51,7 +49,8 @@ export function fetchMetersList(opts){
                     next();
                 });
             }
-            next();
+            ///suppression de la liste des compteurs déjà enregistés en base de données
+            removeAll().then(next).catch(reject);
         }).catch((e)=>{
             notify.error(e);
             reject(e);
