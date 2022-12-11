@@ -189,7 +189,7 @@ export const getSendMessageOptions = (opts) =>{
     } else {
         options.payload.logicalName = logicalName;
     }
-    console.log(options," is opppp",settings.getBAMode(defaultStr(options.deviceName,options.payload.deviceName)));
+    //console.log(options," is opppp14",settings.getBAMode(defaultStr(options.deviceName,options.payload.deviceName)));
     /*** par défaut les données sont recherchés en backend */
     options.payload.mode = defaultStr(options.payload.mode,options.mode,settings.getBAMode(defaultStr(options.deviceName,options.payload.deviceName)));
     if(!options.payload.mode){
