@@ -87,7 +87,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
     const prevMeter = React.usePrevious(meter);
     const isValidMeter = isNonNullString(meter.name) && meter.gaId ? true : false;
     const {name,gaId} = meter;
-    const {sendLoadCurveMessage,downloadLoadCurve,getLogicalNames} = useSocket();
+    const {sendLoadCurveMessage,toggleActivityMessage,downloadLoadCurve,getLogicalNames} = useSocket();
     const opts = {
         gaId,
         deviceName : name,
@@ -106,6 +106,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
             return null;
         }
         Preloader.open("chargement de la courbe de charge pour le compteur ["+meter.name+"]...");
+        toggleActivityMessage(true);
         return sendLoadCurveMessage(op).then((r)=>{
             const {hasError,error,payload} = r;
             if(hasError){
@@ -116,13 +117,14 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
         }).catch((e)=>{
             notify.error(e);
         }).finally(()=>{
+            toggleActivityMessage(false);
             Preloader.close();
         });
     }
     
     let content = null;
     const {loadCurve} = state;
-    let sheetName = loadCurve?.sheetName
+    let sheetName = loadCurve?.sheetName;
     if(isValidLoadCurve(loadCurve)){
         const {periodEnd : endDate, periodStart:startDate,value} = loadCurve;
         const xaxis = [], series = [];
@@ -219,6 +221,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
             {content}
         </View>
         {withPeriodSelector !== false ? <PeriodSelector
+            meter={meter}
             editActionProps={{
                 text : "Modifier la période {0}".sprintf(meter.name && ("["+meter.name+"]") || ''),
                 ...defaultObj(editActionProps)

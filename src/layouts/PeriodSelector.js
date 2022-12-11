@@ -11,7 +11,7 @@ import DateLib from "$lib/date";
 import notify from "$notify";
 import {settings} from "$socket/utils";
 
-export default function LoadCurvePeriodSelectorComponent({onRefresh,refreshActionProps,editActionProps,testID,startDate,endDate,onUpdatePeriod,...props}){
+export default function LoadCurvePeriodSelectorComponent({onRefresh,meter,refreshActionProps,editActionProps,testID,startDate,endDate,onUpdatePeriod,...props}){
     const dialogRef = React.useRef(null);
     const startDateRef = React.useRef(startDate);
     const endDateRef = React.useRef(endDate);
@@ -37,7 +37,8 @@ export default function LoadCurvePeriodSelectorComponent({onRefresh,refreshActio
         startDateRef.current = startDate;;
         endDateRef.current = endDate;
     },[startDate,endDate])
-    const isBAMode = settings.isBAMode;
+    const isBAMode = settings.isBAMode(meter);
+    meter = defaultObj(meter);
     const BAText = isBAMode?"non connecté [BA]":"connecté";
     return <>
         <Fab
@@ -51,14 +52,14 @@ export default function LoadCurvePeriodSelectorComponent({onRefresh,refreshActio
                     text : "Mode {0}".sprintf(BAText),
                     title : 'Les requêtes s\'exécutent actuellement en mode {0}. Cliquez pour modifier le mode d\'exécution des requêtes'.sprintf(BAText),
                     onPress : ()=>{
-                        settings.toggleBAMode();
+                        settings.toggleBAMode(meter);
                         return refresh();
                     },
                 },
                 {
                     error  : true,
                     ...refreshActionProps,
-                    text : defaultStr(refreshActionProps.text,"Actualiser"),
+                    text : defaultStr(refreshActionProps.text,"Actualiser | {0}".sprintf(meter.name)),
                     icon : defaultStr(refreshActionProps.icon,"material-refresh"),
                     onPress : ()=>{
                         refresh();
@@ -69,11 +70,11 @@ export default function LoadCurvePeriodSelectorComponent({onRefresh,refreshActio
                     
                     secondary : true,
                     ...editActionProps,
-                    text : defaultStr(editActionProps.text,"Modifier période"),
+                    text : defaultStr(editActionProps.text,"Modifier période | {0}".sprintf(meter.name)),
                     icon : defaultStr(editActionProps.icon,"calendar"),
                     onPress : ()=>{
                         DialogProvider.open({
-                            title :"Période d'exécution de la requête",
+                            title :"Période d'exécution de la requête | {0}".sprintf(meter.name),
                             subtitle : false,
                             fields : {
                                 startPeriod : {

@@ -1,7 +1,7 @@
 import React from "$react";
 import APP from "$app/instance";
 import {isNonNullString,isPromise,isObj,uniqid,defaultStr,defaultNumber,isValidUrl} from "$utils";
-import { connect as nCreateSocket,downloadLoadCurve,settings,disconnect as disconnectSockeck,sendPingMessage as sPingMessage,sendMessage as sMessage,sendLoadCurveMessage as sLoadCurveMessage,sendGetAllDataRegisterMessage as sGetAllDataRegisterMessage,sendBilanMessage as sBilanMessage,getLogicalName,REQUEST_DATE_TIME_FORMAT,getLogicalNames,buildURL} from "./utils";
+import { connect as nCreateSocket,toggleActivityMessage,downloadLoadCurve,settings,disconnect as disconnectSockeck,sendPingMessage as sPingMessage,sendMessage as sMessage,sendLoadCurveMessage as sLoadCurveMessage,sendGetAllDataRegisterMessage as sGetAllDataRegisterMessage,sendBilanMessage as sBilanMessage,getLogicalName,REQUEST_DATE_TIME_FORMAT,getLogicalNames,buildURL} from "./utils";
 import TYPES from "./types";
 import LOGICAL_NAMES  from "./logicalNames";
 import Queue from "$utils/queue";
@@ -168,7 +168,7 @@ export default function SocketProvider(props){
             APP.off(APP.EVENTS.SCREEN_FOCUS,onLoginUser);
         }
     },[])
-    const value = {connect,disconnect,downloadLoadCurve,settings,...context,REQUEST_DATE_TIME_FORMAT,getLogicalName,getLogicalNames,sendPingMessage,sendMessage,sendLoadCurveMessage,sendBilanMessage,canSendMessage,context,bind,unbind,TYPES,LOGICAL_NAMES,getSocket,get:getSocket,sendGetAllDataRegisterMessage};
+    const value = {connect,toggleActivityMessage,disconnect,downloadLoadCurve,settings,...context,REQUEST_DATE_TIME_FORMAT,getLogicalName,getLogicalNames,sendPingMessage,sendMessage,sendLoadCurveMessage,sendBilanMessage,canSendMessage,context,bind,unbind,TYPES,LOGICAL_NAMES,getSocket,get:getSocket,sendGetAllDataRegisterMessage};
     return <SocketContext.Provider value={value}>
         {children}
     </SocketContext.Provider>

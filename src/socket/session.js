@@ -3,22 +3,32 @@
 // license that can be found in the LICENSE file.
 
 import {getSessionKey as getAuthSessionKey} from "$cauth/utils/session";
-import {defaultObj,isObj,extendObj,isNonNullString} from "$utils";
+import {defaultObj,isObj,extendObj,isNonNullString,defaultStr} from "$utils";
 import session from "$session";
 
-export const getKey = ()=>{
-    return getAuthSessionKey("socket");
+/***@param {string} meterName */
+export const getKey = (meterName)=>{
+    const m = getMeterName(meterName);
+    return getAuthSessionKey("socket{0}".sprintf(m?("-"+m):""));
 }
 
-export const get = (key)=>{
-    const data = defaultObj(session.get(getKey()));
-    if(isNonNullString(key)) return data[key];
+/**@PARAM {string} key
+ * @param {string} meterName le nom du compteur
+ */
+export const get = (key,meterName)=>{
+    const data = defaultObj(session.get(getKey(meterName)));
+    if(isNonNullString(key)) {
+        return data[key];
+    }
     return data;
 }
 
-export const set = (key,value)=>{
-    const data = get();
-    const sKey = getKey();
+export const getMeterName = meter => isObj(meter)? defaultStr(meter.name) : defaultStr(meter);
+
+export const set = (key,value,meterName)=>{
+    meterName = isObj(key) && value && getMeterName(value) || getMeterName(meterName);
+    const data = get(undefined,meterName);
+    let sKey = getKey(meterName);
     if(isObj(key)){
         return session.set(sKey,extendObj({},data,key));
     }
@@ -28,5 +38,5 @@ export const set = (key,value)=>{
 
 
 export default {
-    get,set,getKey,
+    get,set,getKey,getMeterName
 }

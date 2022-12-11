@@ -51,7 +51,6 @@ export default function MeterObjects({ meter, testID, ...props }) {
         </View>
         <Grid style={theme.styles.w100}>
             {(Array.isArray(objects) ? objects : []).map((el) => {
-
                 if (!el || !el.logicalName) return null;
                 const o = getLogicalName(el.logicalName, true);
                 if (!o || !o.isOject) return null;

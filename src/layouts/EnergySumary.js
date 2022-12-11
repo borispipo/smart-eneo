@@ -32,7 +32,7 @@ export default function EnergySumaryLayout({...props}){
         energies : [],
         isLoading : true,
     });
-    const {sendBilanMessage} = useSocket();
+    const {sendBilanMessage,toggleActivityMessage} = useSocket();
     const values = {};
     const {energies:customEnergies} = state;
     const energies = Array.isArray(customEnergies)? customEnergies : [];
@@ -56,6 +56,7 @@ export default function EnergySumaryLayout({...props}){
     const refreshBilan = ()=>{
         Preloader.open("Récupération des données...");
         const type = Object.keys(METER_TYPES)[0];
+        toggleActivityMessage(true);
         Promise.all([
             new Promise((resolve)=>{
                 if(!meterRef.current){
@@ -91,6 +92,7 @@ export default function EnergySumaryLayout({...props}){
             setState({...state,isLoading:false})
         }).finally(()=>{
             Preloader.close();
+            toggleActivityMessage(false);
         })
     }
     React.useEffect(()=>{
@@ -126,6 +128,7 @@ export default function EnergySumaryLayout({...props}){
                         startDate = {startDateRef.current}
                         endDate = {endDateRef.current}
                         withPeriodSelector = {true}
+                        periodSelectorProps = {{meter:null}}
                         onRefreshPeriod = {({startDate,endDate})=>{
                             startDateRef.current = startDate;
                             endDateRef.current = endDate;

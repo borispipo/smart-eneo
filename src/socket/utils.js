@@ -53,6 +53,10 @@ export const MANAGER = {};
 const autoReconnectRef = {
     current : true
 }
+///pour l'afficahge des activities message
+export const activityMessageRef = {
+    current : false,
+}
 export function connect (url,options){
     options = defaultObj(options);
     let {events,onOpen,onClose,onSignedOut,onMessage,onDisconnect,onError,protocol,queryParams,...rest} = options;
@@ -99,7 +103,24 @@ export function connect (url,options){
         }
     });
     socket.on("ACTIVITY_MESSAGE",(data)=>{
-        console.log(data," is active message");
+        if(!activityMessageRef.current) return;
+        let type = undefined,message = undefined;
+        if(isJSON(data)){
+            data = parseJSON(data);
+        }
+        if(isObj(data)){
+            type = defaultStr(data.type);
+            message = defaultStr(data.payload,data.message);
+        }
+        if(!isNonNullString(message)){
+            message = data;
+        }
+        if(!isNonNullString(type)){
+            type = undefined;
+        }
+        if(isNonNullString(message)){
+            Preloader.open({content:message,title:type});
+        }
     });
     socket.isConnected = typeof socket.isConnected =='function'? socket.isConnected : ()=>socket.connected || !socket.disconnected;
     setTimeout(()=>{
@@ -112,6 +133,13 @@ export function connect (url,options){
     socket.id = uniqid("socket-connection-id");
     MANAGER[socket.id] = socket;
     return socket;
+}
+export const ACTIVITY_MESSAGE_TOGGLE_TIMEOUT = 200;
+export const toggleActivityMessage = (toggle,timeout)=>{
+    setTimeout(()=>{
+        activityMessageRef.current = typeof toggle =='boolean'? toggle : activityMessageRef.current;
+    },typeof timeout =='number' ? timeout : ACTIVITY_MESSAGE_TOGGLE_TIMEOUT)
+    return activityMessageRef.current;
 }
 const _disconnect = (socket,id)=>{
     autoReconnectRef.current = false;
@@ -161,8 +189,9 @@ export const getSendMessageOptions = (opts) =>{
     } else {
         options.payload.logicalName = logicalName;
     }
+    console.log(options," is opppp",settings.getBAMode(defaultStr(options.deviceName,options.payload.deviceName)));
     /*** par défaut les données sont recherchés en backend */
-    options.payload.mode = defaultStr(options.payload.mode,options.mode,settings.mode);
+    options.payload.mode = defaultStr(options.payload.mode,options.mode,settings.getBAMode(defaultStr(options.deviceName,options.payload.deviceName)));
     if(!options.payload.mode){
         delete options.payload.mode;
     }
@@ -346,13 +375,19 @@ export const downloadLoadCurve = (sheetName,fetchOptions)=>{
     fileName = defaultStr(fileName,sheetName);
     return new Promise((resolve,reject)=>{
         Preloader.open("téléchargement de la courbe des charges [{0}]...".sprintf(sheetName));
+        rest.headers = defaultObj(rest.headers);
+        rest.headers["Content-Type"] = "application/octet-stream";
         fetch("sheet/{0}".sprintf(sheetName),rest).then((res)=>{
             return res.blob().then((blob)=>{
                 if(!isBlob(blob)){
                     Preloader.close();
                     return reject({...rest,message:'Type de données blob invalide associé à la courbe des charges'});
                 }
-                FileSystem.writeExcel({content:blob,fileName}).then(resolve);
+                let contentType = undefined;
+                try {
+                    contentType = defaultStr(blob.type,res.headers.get("content-type"));
+                } catch{};
+                FileSystem.writeExcel({content:blob,contentType:contentType||undefined,fileName}).then(resolve);
                 Preloader.close();
             })
         }).catch((e)=>{
@@ -362,15 +397,3 @@ export const downloadLoadCurve = (sheetName,fetchOptions)=>{
     })
 }
 
-function downloadFile(blob, name = "file.pdf") {
-    const href = URL.createObjectURL(blob);
-    const a = Object.assign(document.createElement("a"), {
-      href,
-      style: "display:none",
-      download: name,
-    });
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(href);
-    a.remove();
-  }

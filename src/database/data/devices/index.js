@@ -314,13 +314,12 @@ export const getMetersCountFromType = (type)=>{
         return db.allDocs({include_docs:false}).then(({rows })=>{
             let c = 0;
             rows.map((r,i)=>{
-                if(r.id &&  !r.id.contains('_design/')){
+                if(r.id &&  !r.id.contains('_design/') && !r._deleted && !r.deleted){
                     c++;
                 } 
             })
             return c;
         });
-        return db.info().then(info => info.doc_count)
     })
 }
 

@@ -4,22 +4,27 @@
 import session from "./session";
 export const BACKEND_MODE = "BA";
 const bModeSessionKey = "BA-mode";
-export const isBAMode = ()=>{
-    const isB = session.get(bModeSessionKey);
+
+export const isBAMode = (meter)=>{
+    const isB = session.get(bModeSessionKey,meter);
     return isB === undefined ? true : isB ==='1' || isB && true || false;
+}
+export const toggleBAMode = (meter)=>{
+    const isB = isBAMode()?"0":"1";
+    session.set(bModeSessionKey,isB,meter);
+    return isB == "1" ? true : 0;
+}
+export const getBAMode = (meter)=>{
+    return isBAMode(meter)?BACKEND_MODE : undefined;
 }
 export default {
     get isBAMode (){
-        return isBAMode();
-    },
-    get mode (){
-        return isBAMode()? BACKEND_MODE : undefined;
+        return isBAMode;
     },
     get toggleBAMode(){
-        return ()=>{
-            const isB = isBAMode()?"0":"1";
-            session.set(bModeSessionKey,isB);
-            return isB == "1" ? true : 0;
-        }
+        return toggleBAMode;
+    },
+    get getBAMode(){
+        return getBAMode;
     }
 }
