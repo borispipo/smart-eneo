@@ -158,12 +158,14 @@ export default function SocketProvider(props){
         const onLogoutUser = ()=>{
             disconnect();
         }
+        APP.on(APP.EVENTS.SCREEN_FOCUS,onLoginUser);
         APP.on(APP.EVENTS.AUTH_LOGIN_USER,onLoginUser);
         APP.on(APP.EVENTS.AUTH_LOGOUT_USER,onLogoutUser);
         connect();
         return ()=>{
             APP.off(APP.EVENTS.AUTH_LOGIN_USER,onLoginUser);
             APP.off(APP.EVENTS.AUTH_LOGOUT_USER,onLogoutUser);
+            APP.off(APP.EVENTS.SCREEN_FOCUS,onLoginUser);
         }
     },[])
     const value = {connect,disconnect,downloadLoadCurve,settings,...context,REQUEST_DATE_TIME_FORMAT,getLogicalName,getLogicalNames,sendPingMessage,sendMessage,sendLoadCurveMessage,sendBilanMessage,canSendMessage,context,bind,unbind,TYPES,LOGICAL_NAMES,getSocket,get:getSocket,sendGetAllDataRegisterMessage};

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import Fab from "$elayouts/Fab";
+import Fab from "$ecomponents/Fab/Group";
 import React from "$react";
 import DialogProvider from "$ecomponents/Form/FormData/DialogProvider";
 import PropTypes from "prop-types";
@@ -61,7 +61,7 @@ export default function LoadCurvePeriodSelectorComponent({onRefresh,refreshActio
                     text : defaultStr(refreshActionProps.text,"Actualiser"),
                     icon : defaultStr(refreshActionProps.icon,"material-refresh"),
                     onPress : ()=>{
-                        settings.toggleBAMode();
+                        refresh();
                     },
                     title : periodeTitle,
                 },
