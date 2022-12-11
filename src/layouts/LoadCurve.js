@@ -123,7 +123,8 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
     let content = null;
     const {loadCurve} = state;
     let sheetName = loadCurve?.sheetName;
-    let format = chartDateFormatRef.current, startDateValue, endDateValue = null;
+    let format = "dd/mm/yyyy HH:MM", startDateValue, endDateValue = null;
+    const formatRef = React.useRef(format);
     if(isValidLoadCurve(loadCurve)){
         const {periodEnd : endDate, periodStart:startDate,value} = loadCurve;
         const xaxis = [], series = [];
@@ -140,7 +141,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
                     startDateValue = firstDate;
                     endDateValue = lastDate;
                     if(dateDiff.days <=0){
-                        format = "HH:MM:ss";
+                        format = "HH:MM";
                         if(dateDiff.hours == 0){
                             format = "MM:ss";
                         }
@@ -148,6 +149,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
                 }
             }
         }
+        formatRef.current = format;
         for(let i = 1; i < value.length; i++){
             const v = value[i];
             if(!isValidLoadCurveData(v)) break;
@@ -155,7 +157,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
             try {
                 date = new Date(v[0]);
                 if(!date || !DateLib.isValid(date)) continue;
-                const d = date.toFormat(format);
+                const d = date.toFormat(formatRef.current);
                 if(!d) continue;
                 xaxis.push(d);////on prend la période de données
                 series.map((s)=>{
@@ -171,8 +173,19 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
             type = "line"
             series = {series}
             options = {{
+                //@see : https://apexcharts.com/docs/options/xaxis/
                 xaxis : {
                     categories : xaxis,
+                    axisTicks : {
+                        height : 2
+                    },
+                    //type: 'datetime',
+                    /*labels: {
+                        //format : formatRef.current,
+                        formatter: function (value, timestamp) {
+                            return new Date(timestamp).toFormat(formatRef.current) // The formatter function overrides format property
+                        } 
+                    }*/
                 },
                 toolbar : {
                     tools : {
