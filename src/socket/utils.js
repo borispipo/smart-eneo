@@ -82,12 +82,17 @@ export function connect (url,options){
         });
     });
     socket.on("disconnect", () => {
+        if(activityMessageRef.current){
+            activityMessageRef.current = false;
+            Preloader.close();
+        }
         if(autoReconnectRef.current){
             socket.connect();
         }
         if(typeof onDisconnect ==='function'){
             onDisconnect();
         }
+        console.log("disconnected");
     });
     socket.on("connect_error", (error) => {
         const errorStr = error && error.message ? defaultStr(error.message).toLowerCase() : undefined
@@ -135,9 +140,29 @@ export function connect (url,options){
     return socket;
 }
 export const ACTIVITY_MESSAGE_TOGGLE_TIMEOUT = 200;
-export const toggleActivityMessage = (toggle,timeout)=>{
+/***
+ * @param {boolean} la nouvelle valeur de l'activitymessageref
+ * @param {number|function|boolean} si nombre, il s'agit du timeout, délai d'attente avecn modification de la valeur toggle
+ *      si fonction alors il s'agit de la fonction de rappel qui sera appelée après modification de la valeur
+ *      si boolean alors ça determinera si le preloader sera fermé où non a condition que toggle est à false;
+*/
+export const toggleActivityMessage = (toggle,timeout,cb)=>{
+    const closePreloader = typeof timeout =='boolean'? timeout : typeof cb =='boolean'? cb : false;
+    if(typeof timeout =='function'){
+        const t = cb;
+        cb = timeout;
+        timeout = t;
+    }
     setTimeout(()=>{
         activityMessageRef.current = typeof toggle =='boolean'? toggle : activityMessageRef.current;
+        setTimeout(()=>{
+            if(typeof cb =='function'){
+                cb();
+            }
+            if(toggle === false && closePreloader === true){
+                Preloader.close();
+            }
+        },100);
     },typeof timeout =='number' ? timeout : ACTIVITY_MESSAGE_TOGGLE_TIMEOUT)
     return activityMessageRef.current;
 }
@@ -376,18 +401,10 @@ export const downloadLoadCurve = (sheetName,fetchOptions)=>{
     return new Promise((resolve,reject)=>{
         Preloader.open("téléchargement de la courbe des charges [{0}]...".sprintf(sheetName));
         rest.headers = defaultObj(rest.headers);
-        rest.headers["Content-Type"] = "application/octet-stream";
+        //rest.headers["Content-Type"] = "application/octet-stream";
         fetch("sheet/{0}".sprintf(sheetName),rest).then((res)=>{
-            return res.blob().then((blob)=>{
-                if(!isBlob(blob)){
-                    Preloader.close();
-                    return reject({...rest,message:'Type de données blob invalide associé à la courbe des charges'});
-                }
-                let contentType = undefined;
-                try {
-                    contentType = defaultStr(blob.type,res.headers.get("content-type"));
-                } catch{};
-                FileSystem.writeExcel({content:blob,contentType:contentType||undefined,fileName}).then(resolve);
+            return res.text().then((base64)=>{
+                FileSystem.writeExcel({content:base64,fileName}).then(resolve);
                 Preloader.close();
             })
         }).catch((e)=>{

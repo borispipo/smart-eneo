@@ -10,13 +10,18 @@ import {defaultStr} from "$utils";
 import DateLib from "$lib/date";
 import notify from "$notify";
 import {settings} from "$socket/utils";
+import View from "$components/View";
+import Label from "$components/Label";
+import theme from "$theme";
 
-export default function LoadCurvePeriodSelectorComponent({onRefresh,meter,refreshActionProps,editActionProps,testID,startDate,endDate,onUpdatePeriod,...props}){
+export default function LoadCurvePeriodSelectorComponent({onRefresh,startDateValue,endDateValue,meter,refreshActionProps,editActionProps,testID,startDate,endDate,onUpdatePeriod,...props}){
     const dialogRef = React.useRef(null);
     const startDateRef = React.useRef(startDate);
     const endDateRef = React.useRef(endDate);
     const prevStartDate = React.usePrevious(startDate);
     const prevEndDate = React.usePrevious(endDate);
+    startDateValue = DateLib.isValid(startDateValue) ? startDateValue : null;
+    endDateValue = DateLib.isValid(endDateValue) ? endDateValue : null;
     refreshActionProps = defaultObj(refreshActionProps);
     editActionProps = defaultObj(editActionProps);
     let periodeTitle = "";
@@ -76,6 +81,9 @@ export default function LoadCurvePeriodSelectorComponent({onRefresh,meter,refres
                         DialogProvider.open({
                             title :"Période d'exécution de la requête | {0}".sprintf(meter.name),
                             subtitle : false,
+                            header : startDateValue && endDateValue && <View style={[theme.styles.pl1,theme.styles.pr1,theme.styles.mh1]}>
+                                <Label>Résultats obtenues dans la période du {startDateValue.toFormat()} à {endDateValue.toFormat()}</Label>
+                            </View> || null,
                             fields : {
                                 startPeriod : {
                                     type : "datetime",

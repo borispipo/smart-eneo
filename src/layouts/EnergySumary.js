@@ -92,7 +92,7 @@ export default function EnergySumaryLayout({...props}){
             setState({...state,isLoading:false})
         }).finally(()=>{
             Preloader.close();
-            toggleActivityMessage(false);
+            toggleActivityMessage(false,true);
         })
     }
     React.useEffect(()=>{

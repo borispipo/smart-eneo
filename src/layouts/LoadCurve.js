@@ -112,33 +112,50 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
             if(hasError){
                 notify.error(error);
             }
-            console.log("payload............;;;",payload);
             setState({...state,isInitialized:true,hasLoad:true,hasError,loadCurve:!hasError?payload : state.loadCurve});
         }).catch((e)=>{
             notify.error(e);
         }).finally(()=>{
-            toggleActivityMessage(false);
-            Preloader.close();
+            toggleActivityMessage(false,true);
         });
     }
     
     let content = null;
     const {loadCurve} = state;
     let sheetName = loadCurve?.sheetName;
+    let format = chartDateFormatRef.current, startDateValue, endDateValue = null;
     if(isValidLoadCurve(loadCurve)){
         const {periodEnd : endDate, periodStart:startDate,value} = loadCurve;
         const xaxis = [], series = [];
         Object.map(LOAD_CURVE_SERIES,(s,v)=>{
             series.push(Object.clone(s));
         })
+        if(value.length> 2){
+            const firstData = isValidLoadCurveData(value[1])? value[1] : null;
+            const lastData = isValidLoadCurveData(value[value.length-1]) ?value[value.length-1] : null;
+            if(firstData && lastData){
+                const firstDate = new Date(firstData[0]),lastDate = new Date(lastData[0]);
+                const dateDiff = DateLib.dateDiff(firstDate,lastDate);
+                if(dateDiff){
+                    startDateValue = firstDate;
+                    endDateValue = lastDate;
+                    if(dateDiff.days <=0){
+                        format = "HH:MM:ss";
+                        if(dateDiff.hours == 0){
+                            format = "MM:ss";
+                        }
+                    }
+                }
+            }
+        }
         for(let i = 1; i < value.length; i++){
             const v = value[i];
             if(!isValidLoadCurveData(v)) break;
             let date = {};
             try {
                 date = new Date(v[0]);
-                if(!date) continue;
-                const d = DateLib.format(date,chartDateFormatRef.current);
+                if(!date || !DateLib.isValid(date)) continue;
+                const d = date.toFormat(format);
                 if(!d) continue;
                 xaxis.push(d);////on prend la période de données
                 series.map((s)=>{
@@ -222,6 +239,8 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
         </View>
         {withPeriodSelector !== false ? <PeriodSelector
             meter={meter}
+            startDateValue = {startDateValue}
+            endDateValue = {endDateValue}
             editActionProps={{
                 text : "Modifier la période {0}".sprintf(meter.name && ("["+meter.name+"]") || ''),
                 ...defaultObj(editActionProps)

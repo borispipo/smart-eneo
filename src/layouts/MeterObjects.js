@@ -46,8 +46,8 @@ export default function MeterObjects({ meter, testID, ...props }) {
         refresh();
     }, []);
     return <View testID={testID + "_Container"} pointerEvents={isLoading ? "none" : "auto"} style={[theme.styles.w100, theme.styles.ph1]}>
-        <View style={[theme.styles.w100, theme.styles.row, theme.styles.disabled]}>
-            {isLoading && <ActivityIndicator /> || null}
+        <View style={[theme.styles.w100, theme.styles.row,theme.styles.justifyContentCenter, theme.styles.disabled]}>
+            {isLoading && <ActivityIndicator size={'large'} /> || null}
         </View>
         <Grid style={theme.styles.w100}>
             {(Array.isArray(objects) ? objects : []).map((el) => {
