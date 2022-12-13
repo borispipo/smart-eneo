@@ -81,11 +81,7 @@ const styles = StyleSheet.create({
         alignItems : 'center',
     },
     content: {
-        //...StyleSheet.absoluteFill,
-        bottom : 30,
-        right : 0,
-        //position : 'absolute',
-        width : '100%'
+
     }
 })
 
