@@ -12,7 +12,7 @@ import React from "$react";
 import { getLogicalName } from '$socket/logicalNames';
 import Label from '$components/Label';
 import Surface from "$components/Surface";
-export default function MeterObjects({ meter, testID, ...props }) {
+const MeterObjects = React.forwardRef(({ meter, testID, ...props },ref)=> {
     meter = defaultObj(meter);
     meter.name = defaultStr(meter.name);
     const [state, setState] = React.useState({
@@ -42,9 +42,16 @@ export default function MeterObjects({ meter, testID, ...props }) {
             setState({ ...state, isLoading: false })
         });
     }
+    const context = {refresh};
+    React.setRef(ref,context);
     React.useEffect(()=>{
         refresh();
-    },[meter])
+    },[JSON.stringify(meter)])
+    React.useEffect(()=>{
+        return ()=>{
+            React.setRef(ref,null);
+        }
+    },[])
     return <View testID={testID + "_Container"} pointerEvents={isLoading ? "none" : "auto"} style={[theme.styles.w100, theme.styles.ph1]}>
         <View style={[theme.styles.w100, theme.styles.row,theme.styles.justifyContentCenter, theme.styles.disabled]}>
             {isLoading && <ActivityIndicator size={'large'} /> || null}
@@ -76,4 +83,8 @@ export default function MeterObjects({ meter, testID, ...props }) {
         </Grid >
 
     </View>
-}
+});
+
+export default MeterObjects;
+
+MeterObjects.displayName = "RNMeterObjectsComponent"

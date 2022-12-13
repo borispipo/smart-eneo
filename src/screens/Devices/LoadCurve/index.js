@@ -8,12 +8,13 @@ import {getScreenProps} from "$cnavigation";
 import LoadCurveLayout from "$layouts/LoadCurve";
 import {defaultObj,isNonNullString} from "$utils";
 import MeterObjects from "$layouts/MeterObjects";
+import theme from "$theme";
 
 export default function LoadCurveScreen(p){
     const {meter:cMeter,...props} = getScreenProps(p);
     const meter = defaultObj(cMeter)
     const ref = React.useRef(null);
-
+    const meterObJectRef = React.useRef(null);
     return <Screen
         withScrollView
         {...props}
@@ -30,11 +31,28 @@ export default function LoadCurveScreen(p){
     >
         <MeterObjects
             meter={meter}
+            ref = {meterObJectRef}
         />
         <LoadCurveLayout
             {...props}
             ref = {ref}
             meter = {meter}
+            periodSelectorProps = {{
+                ...defaultObj(props.periodSelectorProps),
+                extendActions : [
+                    ...Object.toArray(defaultObj(props.periodSelectorProps).extendActions),
+                    meter.name && {
+                        icon : "file-refresh",
+                        backgroundColor : theme.Colors.get("green-500"),
+                        color : theme.Colors.getContrast(theme.Colors.get("green-500")),
+                        text : 'Actualiser les objets [{0}]'.sprintf(meter.name),
+                        onPress : ()=>{
+                            if(!meterObJectRef.current || !meterObJectRef.current.refresh) return;
+                            meterObJectRef.current.refresh();
+                        }
+                    }
+                ]
+            }}
         />
     </Screen>
 }
