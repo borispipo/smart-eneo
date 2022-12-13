@@ -42,9 +42,9 @@ export default function MeterObjects({ meter, testID, ...props }) {
             setState({ ...state, isLoading: false })
         });
     }
-    React.useEffect(() => {
+    React.useEffect(()=>{
         refresh();
-    }, []);
+    },[meter])
     return <View testID={testID + "_Container"} pointerEvents={isLoading ? "none" : "auto"} style={[theme.styles.w100, theme.styles.ph1]}>
         <View style={[theme.styles.w100, theme.styles.row,theme.styles.justifyContentCenter, theme.styles.disabled]}>
             {isLoading && <ActivityIndicator size={'large'} /> || null}
