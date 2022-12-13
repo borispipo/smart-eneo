@@ -93,8 +93,6 @@ const styles = StyleSheet.create({
     },
     snak : {
         bottom : 40,
-        justifyContent : "center",
-        flexDirection : 'column',
         alignItems : 'center',
     },
     content: {
