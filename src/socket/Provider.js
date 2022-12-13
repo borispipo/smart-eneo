@@ -83,7 +83,7 @@ export default function SocketProvider(props){
         return {
             ...sOptions,
             onDisconnect : ()=>{
-                socketRef.current = null;
+                //socketRef.current = null;
                 messageBoxRef.current?.setVisible(true);
             },
             onOpen : (args)=>{
@@ -94,10 +94,10 @@ export default function SocketProvider(props){
                 context.status = "opened";
                 context.open = true;
                 context.closed = false;
-                if(typeof callbackRef.current =='function'){
+                /*if(typeof callbackRef.current =='function'){
                     callbackRef.current(args);
                 }
-                callbackRef.current = undefined;
+                callbackRef.current = undefined;*/
                 messageBoxRef.current?.setVisible(false);
                 notify.success("Votre connection a été restaurée!!");
             },
@@ -125,7 +125,6 @@ export default function SocketProvider(props){
         }
     },[options])
     const connect = ()=>{
-        console.log(hasSocket() || socketRef.current && socketRef.current.isConnected()," is try to connect");
         if(hasSocket() || socketRef.current && socketRef.current.isConnected()) return;
         socketRef.current = nCreateSocket(url,socketOptions);
         return socketRef.current;
@@ -136,7 +135,12 @@ export default function SocketProvider(props){
     }
     const sendMessage = (options,method)=>{
         method = typeof method =="function"? method : sMessage;
-        if(hasSocket() && !canSendMessage()){
+        if(!canSendMessage()){
+            return Promise.reject({
+                //message : 'Vous ne pouvez pas envoyer de message car vous n\'êtes pas connecté'
+            })
+        }
+        /*if(hasSocket() && !canSendMessage()){
 			return timeout(new Promise((resolve,reject)=>{
                 callbackRef.current = x =>{
                     const t = method(socketRef.current,options);
@@ -146,8 +150,8 @@ export default function SocketProvider(props){
                     callbackRef.current = null;
                 }
             }));
-		}
-        return timeout(method(socketRef.current,options));
+		}*/
+        return timeout( method(socketRef.current,options));
     };
     const sendLoadCurveMessage = (options)=>{
         return sendMessage(options,sLoadCurveMessage);

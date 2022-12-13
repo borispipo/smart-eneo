@@ -14,7 +14,7 @@ import View from "$components/View";
 import Label from "$components/Label";
 import theme from "$theme";
 
-export default function LoadCurvePeriodSelectorComponent({onRefresh,startDateValue,endDateValue,meter,refreshActionProps,editActionProps,testID,startDate,endDate,onUpdatePeriod,...props}){
+export default function LoadCurvePeriodSelectorComponent({onRefresh,startDateValue,extendActions,endDateValue,meter,refreshActionProps,editActionProps,testID,startDate,endDate,onUpdatePeriod,...props}){
     const dialogRef = React.useRef(null);
     const startDateRef = React.useRef(startDate);
     const endDateRef = React.useRef(endDate);
@@ -52,13 +52,14 @@ export default function LoadCurvePeriodSelectorComponent({onRefresh,startDateVal
             visible
             testID = {testID}
             actions ={[
+                ...Object.toArray(extendActions),
                 {
                     icon :  isBAMode ? "thermometer-off" : "thermometer",
                     text : "Mode {0}".sprintf(BAText),
                     title : 'Les requêtes s\'exécutent actuellement en mode {0}. Cliquez pour modifier le mode d\'exécution des requêtes'.sprintf(BAText),
                     onPress : ()=>{
                         settings.toggleBAMode(meter);
-                        return refresh();
+                        //return refresh();
                     },
                 },
                 {
@@ -139,5 +140,9 @@ LoadCurvePeriodSelectorComponent.propTypes = {
         PropTypes.instanceOf(Date),
     ]),
     refreshActionProps : PropTypes.object,//les props du bouton action rafraichier
-    editActionProps : PropTypes.object, //les props du bouton modifier
+    editActionProps : PropTypes.object, //les props du bouton modifier,
+    extendActions : PropTypes.oneOfType([
+        PropTypes.objectOf(PropTypes.object),
+        PropTypes.arrayOf(PropTypes.object)
+    ]),//les actions supplémentaires
 }

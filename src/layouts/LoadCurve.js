@@ -12,8 +12,11 @@ import Auth from "$cauth";
 import View from "$ecomponents/View";
 import Label from "$ecomponents/Label";
 import Button from "$ecomponents/Button";
+import Datagrid from "$ecomponents/Datagrid";
 import Icon,{MENU_ICON} from "$ecomponents/Icon";
 import fetch from "$capi";
+import { fields } from "./utils";
+import {ScrollView} from "react-native";
 
 import Menu from "$ecomponents/Menu";
 import theme from "$theme";
@@ -68,12 +71,13 @@ export const getDateComponent = ({onChange,label,defaultValue,...props},ref)=>{
         }}
     />
 }
-const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,periodSelectorProps,editActionProps,refreshActionProps,onRefreshPeriod,startDate:startDatePeriod,endDate:endDatePeriod},ref)=>{
+const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDisplayTable,withPeriodSelector,periodSelectorProps,editActionProps,refreshActionProps,onRefreshPeriod,startDate:startDatePeriod,endDate:endDatePeriod},ref)=>{
     const [state,setState] = React.useState({
         loadCurve : null,
         hasError : false,
         hasLoad : false,
         isInitialized : false,
+        displayTable : typeof customDisplayTable =='boolean'? customDisplayTable : false,
     });
     startDatePeriod = defaultVal(startDatePeriod,defaultStartPeriod);
     endDatePeriod = defaultVal(endDatePeriod,defaultEndPeriod);
@@ -121,13 +125,22 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
     }
     
     let content = null;
-    const {loadCurve} = state;
+    const {loadCurve,displayTable} = state;
     let sheetName = loadCurve?.sheetName;
+    const downloadSHeetAction = sheetName && {
+        text:"Télécharger",
+        icon: "download",
+        onPress :()=>{
+            downloadLoadCurve(sheetName,{
+                fileName : sanitizeFileName("{0} du {1} au {2}".sprintf(getFileName(sheetName,true),startDateStr,endDateStr))
+            });
+        }   
+    };
     let format = "dd/mm/yyyy HH:MM", startDateValue, endDateValue = null;
     const formatRef = React.useRef(format);
     if(isValidLoadCurve(loadCurve)){
         const {periodEnd : endDate, periodStart:startDate,value} = loadCurve;
-        const xaxis = [], series = [];
+        const xaxis = [], series = [],tableData = [];
         Object.map(LOAD_CURVE_SERIES,(s,v)=>{
             series.push(Object.clone(s));
         })
@@ -153,22 +166,44 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
         for(let i = 1; i < value.length; i++){
             const v = value[i];
             if(!isValidLoadCurveData(v)) break;
+            const tData = {};
             let date = {};
             try {
                 date = new Date(v[0]);
                 if(!date || !DateLib.isValid(date)) continue;
+                tData.date = new Date(date);
                 const d = date.toFormat(formatRef.current);
                 if(!d) continue;
-                xaxis.push(d);////on prend la période de données
                 series.map((s)=>{
                     const v1 = parseFloat(v[s.loadCurveIndex]) || 0;
-                    s.data.push(v1);
+                    if(!displayTable){
+                        s.data.push(v1);
+                    } else {
+                        tData[s.name] = v1;
+                    }
                 });
+                if(displayTable){
+                    tData.period = new Date(date).toFormat("HH:MM");
+                    tableData.push(tData);
+                } else {
+                    xaxis.push(d);////on prend la période de données
+                    
+                }
             } catch(e){
                 console.log(e," is catching heinnn")
             }
         }
-        content = <Chart
+        content = displayTable ? <Datagrid
+                data = {tableData}
+                columns = {fields}
+                sectionListColumns = {['period']}
+                getSectionListHeader = {({data})=>{
+                    return data.date && data.date?.toFormat ? data.date.toFormat("dd/mm/yyyy"): null;
+                }}
+                customMenu = {[downloadSHeetAction]}
+                showActions = {false}
+                selectable  = {false}
+            />: <Chart
             height = {400}
             type = "line"
             series = {series}
@@ -214,8 +249,9 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
     React.setRef({
         refresh,
     });
+
     return <>
-        {isValidMeter ?<View style={[theme.styles.row,theme.styles.p1,theme.styles.flexWrap]}>
+        {isValidMeter && !displayTable ?<View style={[theme.styles.row,theme.styles.p1,theme.styles.flexWrap]}>
             <Label>Courbe des charge associée au compteur {" ["}</Label>
             <Label textBold>{name}] {" "}</Label>
             {hasDate ? <>
@@ -236,15 +272,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
             <Menu  anchor = {
                     (props)=> <Icon icon = {MENU_ICON} {...props} /> 
                 } items ={[
-                   sheetName && {
-                        text:"Télécharger",
-                        icon: "download",
-                        onPress :()=>{
-                            downloadLoadCurve(sheetName,{
-                                fileName : sanitizeFileName("{0} du {1} au {2}".sprintf(getFileName(sheetName,true),startDateStr,endDateStr))
-                            });
-                        }   
-                    }
+                   downloadSHeetAction
                 ]}/>
         </View> : null}
         <View>
@@ -252,6 +280,16 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,withPeriodSelector,perio
         </View>
         {withPeriodSelector !== false ? <PeriodSelector
             meter={meter}
+            extendActions = {[{
+                icon : displayTable ? "chart-line" :"table-large",
+                text : displayTable ? "Afficher contenu Graphique": "Afficher contenu tableau",
+                info : true,
+                onPress  : ()=>{
+                    setTimeout(()=>{
+                        setState({...state,displayTable:!displayTable});
+                    },300);
+                }
+            }]}
             startDateValue = {startDateValue}
             endDateValue = {endDateValue}
             editActionProps={{
