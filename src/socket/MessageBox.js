@@ -12,12 +12,12 @@ import {defaultObj} from "$utils";
 import Snackbar from '$ecomponents/Snackbar';
 import theme from "$theme";
 import APP from "$capp";
+import Auth from "$cauth";
 
 const MessageBox = React.forwardRef(({visible:customVisible,onReconnectPress,labelProps,children,...props},ref)=>{
     const [visible,setVisible] = React.useState(typeof customVisible =='boolean'?customVisible:true);
     const isInitializedRef = React.useRef(null);
-    const checkLogin = x=>typeof Auth !=='undefined' && Auth && Auth.isLoggedIn  && Auth.isLoggedIn() || true;
-    const [isLoggedIn,setIsLoggedIn] = React.useState(checkLogin())
+    const [isLoggedIn,setIsLoggedIn] = React.useState(Auth.isLoggedIn())
     const prevVisible = React.usePrevious(visible);
     if(prevVisible !== visible){
         isInitializedRef.current = true;
