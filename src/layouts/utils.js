@@ -6,7 +6,9 @@ export const fields = {
     "period" : {
         field : "period",
         label : "Fin de période",
-        //type : "datetime",
+        width : 130,
+        type : "datetime",
+        format : "HH:MM",
     },
     "Canal 1 (kWh)" : {
         field : "Canal 1 (kWh)",
@@ -14,6 +16,7 @@ export const fields = {
         type : "number",
         format : "number",
         groupable : false,
+        filter : false,
     },
     "Canal 2 (kWh)" : {
         field : "Canal 2 (kWh)",
@@ -21,6 +24,7 @@ export const fields = {
         type : "number",
         format : "number",
         groupable : false,
+        filter : false,
     },
     "Canal 3 (kvarh)" : {
         field : "Canal 3 (kvarh)",
@@ -28,6 +32,7 @@ export const fields = {
         type : "number",
         format : "number",
         groupable : false,
+        filter : false,
     },
     "Canal 4 (kvarh)" : {
         field : "Canal 4 (kvarh)",
@@ -40,5 +45,6 @@ export const fields = {
         field : "Evenements",
         label : "Evenements",
         groupable : false,
+        filter : false,
     },
 }

@@ -20,6 +20,7 @@ export default function LoadCurvePeriodSelectorComponent({onRefresh,startDateVal
     const endDateRef = React.useRef(endDate);
     const prevStartDate = React.usePrevious(startDate);
     const prevEndDate = React.usePrevious(endDate);
+    const forceRender = React.useForceRender();
     startDateValue = DateLib.isValid(startDateValue) ? startDateValue : null;
     endDateValue = DateLib.isValid(endDateValue) ? endDateValue : null;
     refreshActionProps = defaultObj(refreshActionProps);
@@ -59,6 +60,7 @@ export default function LoadCurvePeriodSelectorComponent({onRefresh,startDateVal
                     title : 'Les requêtes s\'exécutent actuellement en mode {0}. Cliquez pour modifier le mode d\'exécution des requêtes'.sprintf(BAText),
                     onPress : ()=>{
                         settings.toggleBAMode(meter);
+                        forceRender();
                         //return refresh();
                     },
                 },

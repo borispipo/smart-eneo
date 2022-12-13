@@ -7,10 +7,11 @@ const bModeSessionKey = "BA-mode";
 
 export const isBAMode = (meter)=>{
     const isB = session.get(bModeSessionKey,meter);
-    return isB !== false ? true : false;
+    if(isB =='no') return false;
+    return true;
 }
 export const toggleBAMode = (meter)=>{
-    const isB = isBAMode() ? false : true;
+    const isB = isBAMode(meter) ? "no" : "yes";
     session.set(bModeSessionKey,isB,meter);
     return isB;
 }

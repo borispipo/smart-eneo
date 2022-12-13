@@ -136,6 +136,17 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
             });
         }   
     };
+    const changeDisplayType = {
+        icon : displayTable ? "chart-line" :"table-large",
+        text : displayTable ? "Graphique": "Tableau",
+        tooltip : displayTable ? "Cliquez pour afficher le contenu en graphe":"Cliquez pour afficher le contenu en tableau",
+        info : true,
+        onPress  : ()=>{
+            setTimeout(()=>{
+                setState({...state,displayTable:!displayTable});
+            },200);
+        }
+    };
     let format = "dd/mm/yyyy HH:MM", startDateValue, endDateValue = null;
     const formatRef = React.useRef(format);
     if(isValidLoadCurve(loadCurve)){
@@ -183,7 +194,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
                     }
                 });
                 if(displayTable){
-                    tData.period = new Date(date).toFormat("HH:MM");
+                    tData.period = new Date(date);//.toFormat("HH:MM");
                     tableData.push(tData);
                 } else {
                     xaxis.push(d);////on prend la période de données
@@ -200,9 +211,14 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
                 getSectionListHeader = {({data})=>{
                     return data.date && data.date?.toFormat ? data.date.toFormat("dd/mm/yyyy"): null;
                 }}
-                customMenu = {[downloadSHeetAction]}
+                customMenu = {[changeDisplayType,downloadSHeetAction]}
                 showActions = {false}
+                filterable = {false}
                 selectable  = {false}
+                onRefreshDatagrid = {()=>{
+                    refresh();
+                }}
+                fetchData = {undefined}
             />: <Chart
             height = {400}
             type = "line"
@@ -272,7 +288,8 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
             <Menu  anchor = {
                     (props)=> <Icon icon = {MENU_ICON} {...props} /> 
                 } items ={[
-                   downloadSHeetAction
+                   downloadSHeetAction,
+                   changeDisplayType,
                 ]}/>
         </View> : null}
         <View>
@@ -280,16 +297,6 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
         </View>
         {withPeriodSelector !== false ? <PeriodSelector
             meter={meter}
-            extendActions = {[{
-                icon : displayTable ? "chart-line" :"table-large",
-                text : displayTable ? "Afficher contenu Graphique": "Afficher contenu tableau",
-                info : true,
-                onPress  : ()=>{
-                    setTimeout(()=>{
-                        setState({...state,displayTable:!displayTable});
-                    },300);
-                }
-            }]}
             startDateValue = {startDateValue}
             endDateValue = {endDateValue}
             editActionProps={{
