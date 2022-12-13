@@ -11,10 +11,13 @@ import Dimensions from "$cdimensions";
 import {defaultObj} from "$utils";
 import Snackbar from '$ecomponents/Snackbar';
 import theme from "$theme";
+import APP from "$capp";
 
 const MessageBox = React.forwardRef(({visible:customVisible,onReconnectPress,labelProps,children,...props},ref)=>{
     const [visible,setVisible] = React.useState(typeof customVisible =='boolean'?customVisible:true);
     const isInitializedRef = React.useRef(null);
+    const checkLogin = x=>typeof Auth !=='undefined' && Auth && Auth.isLoggedIn  && Auth.isLoggedIn() || true;
+    const [isLoggedIn,setIsLoggedIn] = React.useState(checkLogin())
     const prevVisible = React.usePrevious(visible);
     if(prevVisible !== visible){
         isInitializedRef.current = true;
@@ -43,6 +46,20 @@ const MessageBox = React.forwardRef(({visible:customVisible,onReconnectPress,lab
         }
         cbRef.current = null;
     },[visible])
+    React.useEffect(()=>{
+        const onLoginUser = (u)=>{
+            setIsLoggedIn(true);
+       },onLogoutUser = ()=>{
+            setIsLoggedIn(false);
+       }
+       APP.on(APP.EVENTS.AUTH_LOGIN_USER,onLoginUser);
+       APP.on(APP.EVENTS.AUTH_LOGOUT_USER,onLogoutUser);
+       return ()=>{
+        APP.off(APP.EVENTS.AUTH_LOGIN_USER,onLoginUser);
+        APP.off(APP.EVENTS.AUTH_LOGOUT_USER,onLogoutUser);
+       }
+    },[])
+    if(!isLoggedIn) return null;
     if(!React.isValidElement(children,true) || !children){
         children = isInitializedRef.current ? "Vous avez perdue la connection, tentative de reconnection en cours...." : 
         "Vous n'êtes pas connectés, tentative de connection en cours....";
