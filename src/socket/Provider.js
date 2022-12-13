@@ -99,7 +99,7 @@ export default function SocketProvider(props){
                 }
                 callbackRef.current = undefined;*/
                 messageBoxRef.current?.setVisible(false);
-                notify.success("Votre connection a été restaurée!!");
+                //notify.success("Votre connection a été restaurée!!");
             },
             onClose : (args)=>{
                 queue.stop=true;
@@ -124,8 +124,8 @@ export default function SocketProvider(props){
             }
         }
     },[options])
-    const connect = ()=>{
-        if(hasSocket() || socketRef.current && socketRef.current.isConnected()) return;
+    const connect = (force)=>{
+        if(force !== true && (hasSocket() || socketRef.current && socketRef.current.isConnected())) return;
         socketRef.current = nCreateSocket(url,socketOptions);
         return socketRef.current;
     }
@@ -194,7 +194,7 @@ export default function SocketProvider(props){
     const value = {connect,toggleActivityMessage,disconnect,downloadLoadCurve,settings,...context,REQUEST_DATE_TIME_FORMAT,getLogicalName,getLogicalNames,sendPingMessage,sendMessage,sendLoadCurveMessage,sendBilanMessage,canSendMessage,context,bind,unbind,TYPES,LOGICAL_NAMES,getSocket,get:getSocket,sendGetAllDataRegisterMessage};
     return <SocketContext.Provider value={value}>
         {children}
-        <MessageBox ref={messageBoxRef}></MessageBox>
+        <MessageBox ref={messageBoxRef} onReconnectPress={()=>{connect(true);}}></MessageBox>
     </SocketContext.Provider>
 }
 
