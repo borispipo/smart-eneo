@@ -207,6 +207,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
         content = displayTable ? <Datagrid
                 data = {tableData}
                 columns = {fields}
+                sessionName = {meter.name}
                 sectionListColumns = {['period']}
                 /*getSectionListHeader = {({data})=>{
                     return data.date && data.date?.toFormat ? data.date.toFormat("dd/mm/yyyy"): null;
