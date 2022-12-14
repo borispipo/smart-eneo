@@ -220,10 +220,12 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
                 }}
                 fetchData = {undefined}
             />: <Chart
-            height = {400}
-            type = "line"
-            series = {series}
             options = {{
+                series,
+                chart : {
+                    height : 400,
+                    type : "line",
+                },
                 //@see : https://apexcharts.com/docs/options/xaxis/
                 xaxis : {
                     categories : xaxis,
