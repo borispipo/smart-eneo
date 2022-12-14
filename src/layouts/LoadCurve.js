@@ -208,9 +208,9 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
                 data = {tableData}
                 columns = {fields}
                 sectionListColumns = {['period']}
-                getSectionListHeader = {({data})=>{
+                /*getSectionListHeader = {({data})=>{
                     return data.date && data.date?.toFormat ? data.date.toFormat("dd/mm/yyyy"): null;
-                }}
+                }}*/
                 customMenu = {[changeDisplayType,downloadSHeetAction]}
                 showActions = {false}
                 filterable = {false}
