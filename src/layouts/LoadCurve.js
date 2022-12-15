@@ -203,6 +203,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
                 }}
                 displayType = {"lineChart"}
                 fetchData = {undefined}
+                charConfig = {{xaxis:""}}
             />: <Chart
             options = {{
                 series,

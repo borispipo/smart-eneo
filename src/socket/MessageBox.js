@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
         //color: "white",
     },
     snak : {
-        bottom : 40,
+        bottom : 80,
         alignItems : 'center',
     },
     content: {
