@@ -271,12 +271,12 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
 
                
             </>:null}
-            <Menu  anchor = {
+            {false ? <Menu  anchor = {
                     (props)=> <Icon icon = {MENU_ICON} {...props} /> 
                 } items ={[
                    downloadSHeetAction,
                    changeDisplayType,
-                ]}/>
+                ]}/>:null}
         </View> : null}
         <View>
             {content}
