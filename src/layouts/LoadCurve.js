@@ -136,7 +136,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
             });
         }   
     };
-    const changeDisplayType = {
+    const changeDisplayType = true ? null : {
         icon : displayTable ? "chart-line" :"table-large",
         text : displayTable ? "Graphique": "Tableau",
         tooltip : displayTable ? "Cliquez pour afficher le contenu en graphe":"Cliquez pour afficher le contenu en tableau",
@@ -150,29 +150,11 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
     let format = "dd/mm/yyyy HH:MM", startDateValue, endDateValue = null;
     const formatRef = React.useRef(format);
     if(isValidLoadCurve(loadCurve)){
-        const {periodEnd : endDate, periodStart:startDate,value} = loadCurve;
+        const {value} = loadCurve;
         const xaxis = [], series = [],tableData = [];
         Object.map(LOAD_CURVE_SERIES,(s,v)=>{
             series.push(Object.clone(s));
         })
-        if(value.length> 2){
-            const firstData = isValidLoadCurveData(value[1])? value[1] : null;
-            const lastData = isValidLoadCurveData(value[value.length-1]) ?value[value.length-1] : null;
-            if(firstData && lastData){
-                const firstDate = new Date(firstData[0]),lastDate = new Date(lastData[0]);
-                const dateDiff = DateLib.dateDiff(firstDate,lastDate);
-                if(dateDiff){
-                    startDateValue = firstDate;
-                    endDateValue = lastDate;
-                    if(dateDiff.days <=0){
-                        format = "HH:MM";
-                        if(dateDiff.hours == 0){
-                            format = "MM:ss";
-                        }
-                    }
-                }
-            }
-        }
         formatRef.current = format;
         for(let i = 1; i < value.length; i++){
             const v = value[i];
@@ -187,13 +169,13 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
                 if(!d) continue;
                 series.map((s)=>{
                     const v1 = parseFloat(v[s.loadCurveIndex]) || 0;
-                    if(!displayTable){
+                    if(false && !displayTable){
                         s.data.push(v1);
                     } else {
                         tData[s.name] = v1;
                     }
                 });
-                if(displayTable){
+                if(true || displayTable){
                     tData.period = new Date(date);//.toFormat("HH:MM");
                     tableData.push(tData);
                 } else {
@@ -204,7 +186,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
                 console.log(e," is catching heinnn")
             }
         }
-        content = displayTable ? <Datagrid
+        content = displayTable || true ? <Datagrid
                 data = {tableData}
                 columns = {fields}
                 sessionName = {meter.name}
@@ -219,6 +201,7 @@ const LoadCurveLayout = React.forwardRef(({meter,testID,displayTable:customDispl
                 onRefreshDatagrid = {()=>{
                     refresh();
                 }}
+                displayType = {"lineChart"}
                 fetchData = {undefined}
             />: <Chart
             options = {{
